@@ -58,9 +58,339 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 
+def extract_candidate_profile(resume_text: str, analysis: dict) -> dict:
+    """
+    Extract candidate profile from resume using resume analyzer
+    
+    Args:
+        resume_text: The resume text
+        analysis: Analysis from ResumeAnalyzer
+        
+    Returns:
+        dict: Candidate profile information
+    """
+    profile = {
+        "name": analysis.get("contact_info", {}).get("name", "Candidate"),
+        "email": analysis.get("contact_info", {}).get("email", ""),
+        "phone": analysis.get("contact_info", {}).get("phone", ""),
+        "experience_years": analysis.get("experience_years", 0),
+        "education_level": analysis.get("education_level", "Not specified"),
+        "technical_skills": analysis.get("technical_skills", []),
+        "soft_skills": analysis.get("soft_skills", []),
+        "sections_found": analysis.get("sections_found", []),
+        "current_ats_score": analysis.get("ats_score", 0),
+        "strengths": analysis.get("strengths", []),
+        "weaknesses": analysis.get("weaknesses", [])
+    }
+    return profile
+
+
+def analyze_weak_phrases_with_ai(client, resume_text: str, profile: dict) -> list:
+    """
+    Use AI to analyze weak phrases in the resume
+    
+    Args:
+        client: OpenAI client
+        resume_text: The resume text
+        profile: Candidate profile
+        
+    Returns:
+        list: Weak phrases with alternatives
+    """
+    prompt = f"""You are an expert resume writer. Analyze this resume for weak/passive phrases.
+
+CANDIDATE PROFILE:
+- Experience: {profile['experience_years']} years
+- Education: {profile['education_level']}
+- Key Skills: {', '.join(profile['technical_skills'][:5])}
+
+RESUME TEXT:
+{resume_text}
+
+Identify 5-10 SPECIFIC weak phrases from THIS resume and provide:
+1. Original phrase (exact quote)
+2. Why it's weak
+3. Stronger alternative (contextualized)
+4. Priority (High/Medium/Low)
+
+Return as JSON array:
+[
+  {{"original": "...", "reason": "...", "alternative": "...", "priority": "High"}},
+  ...
+]"""
+
+    try:
+        completion = client.chat.completions.create(
+            extra_headers={
+                "HTTP-Referer": "https://github.com/FEDI-HASSINE/cv-ai-",
+                "X-Title": "UtopiaHire Resume Rewriter",
+            },
+            model="deepseek/deepseek-r1",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7,
+            max_tokens=2000
+        )
+        
+        response_text = completion.choices[0].message.content
+        json_match = re.search(r'```json\s*(.*?)\s*```', response_text, re.DOTALL)
+        if json_match:
+            json_text = json_match.group(1)
+        else:
+            json_text = response_text
+        
+        return json.loads(json_text)
+    except Exception as e:
+        st.warning(f"⚠️ Weak phrases analysis failed: {e}")
+        return []
+
+
+def suggest_action_verbs_with_ai(client, resume_text: str, profile: dict) -> dict:
+    """
+    Use AI to suggest contextualized action verbs
+    
+    Args:
+        client: OpenAI client
+        resume_text: The resume text
+        profile: Candidate profile
+        
+    Returns:
+        dict: Action verbs by category with examples
+    """
+    prompt = f"""You are an expert resume writer. Suggest powerful action verbs for this candidate.
+
+CANDIDATE PROFILE:
+- Experience: {profile['experience_years']} years
+- Education: {profile['education_level']}
+- Key Skills: {', '.join(profile['technical_skills'][:5])}
+- Sections: {', '.join(profile['sections_found'])}
+
+RESUME TEXT (excerpt):
+{resume_text[:1000]}...
+
+Suggest 10-15 action verbs categorized by:
+- Leadership (if applicable)
+- Technical/Innovation
+- Achievement
+- Collaboration
+
+For EACH verb, provide a contextualized example using this candidate's background.
+
+Return as JSON:
+{{
+  "Leadership": [{{"verb": "...", "example": "Led team of X..."}}, ...],
+  "Technical": [{{"verb": "...", "example": "Developed..."}}, ...],
+  ...
+}}"""
+
+    try:
+        completion = client.chat.completions.create(
+            extra_headers={
+                "HTTP-Referer": "https://github.com/FEDI-HASSINE/cv-ai-",
+                "X-Title": "UtopiaHire Resume Rewriter",
+            },
+            model="deepseek/deepseek-r1",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7,
+            max_tokens=2000
+        )
+        
+        response_text = completion.choices[0].message.content
+        json_match = re.search(r'```json\s*(.*?)\s*```', response_text, re.DOTALL)
+        if json_match:
+            json_text = json_match.group(1)
+        else:
+            json_text = response_text
+        
+        return json.loads(json_text)
+    except Exception as e:
+        st.warning(f"⚠️ Action verbs suggestion failed: {e}")
+        return {}
+
+
+def suggest_quantifications_with_ai(client, resume_text: str, profile: dict) -> list:
+    """
+    Use AI to suggest quantification opportunities
+    
+    Args:
+        client: OpenAI client
+        resume_text: The resume text
+        profile: Candidate profile
+        
+    Returns:
+        list: Quantification opportunities
+    """
+    prompt = f"""You are an expert resume writer. Identify quantification opportunities in this resume.
+
+CANDIDATE PROFILE:
+- Experience: {profile['experience_years']} years
+- Field: {', '.join(profile['technical_skills'][:3])}
+
+RESUME TEXT:
+{resume_text}
+
+Find 5-10 statements that need quantifiable metrics. For each:
+1. Original vague statement (exact quote)
+2. Quantified version with example metrics
+3. Impact explanation
+
+Return as JSON array:
+[
+  {{"original": "...", "quantified": "...", "impact": "..."}},
+  ...
+]"""
+
+    try:
+        completion = client.chat.completions.create(
+            extra_headers={
+                "HTTP-Referer": "https://github.com/FEDI-HASSINE/cv-ai-",
+                "X-Title": "UtopiaHire Resume Rewriter",
+            },
+            model="deepseek/deepseek-r1",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7,
+            max_tokens=2000
+        )
+        
+        response_text = completion.choices[0].message.content
+        json_match = re.search(r'```json\s*(.*?)\s*```', response_text, re.DOTALL)
+        if json_match:
+            json_text = json_match.group(1)
+        else:
+            json_text = response_text
+        
+        return json.loads(json_text)
+    except Exception as e:
+        st.warning(f"⚠️ Quantification analysis failed: {e}")
+        return []
+
+
+def suggest_formatting_with_ai(client, resume_text: str, profile: dict) -> list:
+    """
+    Use AI to suggest formatting improvements
+    
+    Args:
+        client: OpenAI client
+        resume_text: The resume text
+        profile: Candidate profile
+        
+    Returns:
+        list: Formatting suggestions
+    """
+    prompt = f"""You are an expert resume writer. Analyze formatting issues in this resume.
+
+CANDIDATE PROFILE:
+- Sections present: {', '.join(profile['sections_found'])}
+- ATS Score: {profile['current_ats_score']}/100
+
+RESUME TEXT:
+{resume_text}
+
+List 5-8 SPECIFIC formatting improvements needed for THIS resume.
+Be actionable and specific.
+
+Return as JSON array:
+["Suggestion 1", "Suggestion 2", ...]"""
+
+    try:
+        completion = client.chat.completions.create(
+            extra_headers={
+                "HTTP-Referer": "https://github.com/FEDI-HASSINE/cv-ai-",
+                "X-Title": "UtopiaHire Resume Rewriter",
+            },
+            model="deepseek/deepseek-r1",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7,
+            max_tokens=1500
+        )
+        
+        response_text = completion.choices[0].message.content
+        json_match = re.search(r'```json\s*(.*?)\s*```', response_text, re.DOTALL)
+        if json_match:
+            json_text = json_match.group(1)
+        else:
+            json_text = response_text
+        
+        return json.loads(json_text)
+    except Exception as e:
+        st.warning(f"⚠️ Formatting analysis failed: {e}")
+        return []
+
+
+def generate_optimized_resume_content(client, resume_text: str, profile: dict, improvements: dict) -> dict:
+    """
+    Generate complete optimized resume content with AI
+    
+    Args:
+        client: OpenAI client
+        resume_text: Original resume text
+        profile: Candidate profile
+        improvements: Suggested improvements
+        
+    Returns:
+        dict: Optimized resume sections
+    """
+    prompt = f"""You are an expert resume writer. Create an optimized version of this resume.
+
+CANDIDATE PROFILE:
+- Name: {profile['name']}
+- Experience: {profile['experience_years']} years
+- Education: {profile['education_level']}
+- Technical Skills: {', '.join(profile['technical_skills'])}
+- Soft Skills: {', '.join(profile['soft_skills'])}
+
+ORIGINAL RESUME:
+{resume_text}
+
+KEY IMPROVEMENTS TO APPLY:
+- Weak phrases to fix: {len(improvements.get('weak_phrases', []))}
+- Add quantifiable metrics
+- Use stronger action verbs
+- Improve formatting
+
+CREATE OPTIMIZED RESUME with these sections:
+1. Professional Summary (3-4 lines, compelling)
+2. Professional Experience (bullet points, quantified achievements)
+3. Skills (technical and soft skills)
+4. Education
+
+Maintain factual accuracy - only optimize language, don't invent information.
+
+Return as JSON:
+{{
+  "summary": "...",
+  "experience": ["• Achievement 1...", "• Achievement 2...", ...],
+  "skills": "Technical Skills: ...\\nSoft Skills: ...",
+  "education": "..."
+}}"""
+
+    try:
+        completion = client.chat.completions.create(
+            extra_headers={
+                "HTTP-Referer": "https://github.com/FEDI-HASSINE/cv-ai-",
+                "X-Title": "UtopiaHire Resume Rewriter",
+            },
+            model="deepseek/deepseek-r1",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7,
+            max_tokens=3000
+        )
+        
+        response_text = completion.choices[0].message.content
+        json_match = re.search(r'```json\s*(.*?)\s*```', response_text, re.DOTALL)
+        if json_match:
+            json_text = json_match.group(1)
+        else:
+            json_text = response_text
+        
+        return json.loads(json_text)
+    except Exception as e:
+        st.warning(f"⚠️ Resume generation failed: {e}")
+        return {}
+
+
 def optimize_with_deepseek(resume_text: str, basic_analysis: dict) -> dict:
     """
-    Optimisation avancée du CV avec DeepSeek R1
+    Optimisation avancée du CV avec DeepSeek R1 - Version modulaire
     
     Args:
         resume_text: Texte complet du CV
@@ -76,138 +406,82 @@ def optimize_with_deepseek(resume_text: str, basic_analysis: dict) -> dict:
     try:
         client = st.session_state['rewriter_deepseek_client']
         
-        # Construire le prompt pour DeepSeek
-        prompt = f"""You are an expert resume writer and career coach specializing in ATS-optimized resumes. 
-
-RESUME TO OPTIMIZE:
-{resume_text}
-
-CURRENT BASIC ANALYSIS:
-- Weak phrases detected: {len(basic_analysis.get('weak_phrases', []))}
-- Basic action verbs suggested: {len(basic_analysis.get('action_verbs', {}))}
-- Basic formatting issues: {len(basic_analysis.get('formatting', []))}
-
-YOUR MISSION:
-Provide a comprehensive, personalized optimization analysis of this specific resume.
-
-REQUIRED OUTPUT (in JSON format):
-
-1. WEAK_PHRASES_ANALYSIS:
-   - Identify ALL weak/passive phrases in this resume
-   - For each, provide:
-     * Original phrase (exact quote from resume)
-     * Why it's weak (specific explanation)
-     * Stronger alternative (contextualized to this resume)
-     * Priority (High/Medium/Low)
-   
-2. ACTION_VERBS_SUGGESTIONS:
-   - Analyze current verbs used in this resume
-   - Suggest 10-15 BETTER action verbs categorized by:
-     * Leadership verbs (if applicable)
-     * Technical verbs (if applicable)
-     * Achievement verbs
-     * Innovation verbs
-   - For each verb, provide example usage in THIS resume's context
-
-3. QUANTIFICATION_OPPORTUNITIES:
-   - Identify 5-10 specific statements that need quantification
-   - For each:
-     * Original vague statement (exact quote)
-     * Suggested quantified version (with example metrics)
-     * Impact explanation
-
-4. FORMATTING_IMPROVEMENTS:
-   - List 5-8 specific formatting issues in THIS resume
-   - Provide actionable fixes
-
-5. PRIORITY_RECOMMENDATIONS:
-   - 3-5 HIGH priority changes (biggest impact)
-   - 3-5 MEDIUM priority improvements
-   - 2-3 LOW priority nice-to-haves
-   - For each: specific action + expected impact
-
-6. OPTIMIZED_RESUME_SECTIONS:
-   - Rewrite the MOST IMPORTANT sections (Summary, Experience bullets)
-   - Keep original structure but optimize language
-   - Maintain factual accuracy
-
-7. IMPROVEMENT_SCORE:
-   - Current score: 0-100
-   - Potential score after improvements: 0-100
-   - Key areas of improvement
-
-Return your analysis in valid JSON format with these exact keys:
-{{
-  "weak_phrases": [...],
-  "action_verbs": {{...}},
-  "quantification": [...],
-  "formatting": [...],
-  "priority_recommendations": {{...}},
-  "optimized_sections": {{...}},
-  "improvement_score": {{...}}
-}}
-
-Be specific, actionable, and reference the actual content of this resume."""
-
-        # Appel API DeepSeek R1
-        with st.spinner("🤖 DeepSeek R1 analyse votre CV en profondeur..."):
-            completion = client.chat.completions.create(
-                extra_headers={
-                    "HTTP-Referer": "https://github.com/FEDI-HASSINE/cv-ai-",
-                    "X-Title": "UtopiaHire Resume Rewriter",
-                },
-                model="deepseek/deepseek-r1",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ],
-                temperature=0.7,
-                max_tokens=4000
+        # Step 1: Extract candidate profile from resume analyzer
+        st.info("📋 Step 1/5: Extracting candidate profile...")
+        profile = extract_candidate_profile(resume_text, basic_analysis)
+        
+        # Step 2: Analyze weak phrases with context
+        st.info("🔍 Step 2/5: Analyzing weak phrases...")
+        weak_phrases = analyze_weak_phrases_with_ai(client, resume_text, profile)
+        
+        # Step 3: Suggest action verbs with context
+        st.info("💪 Step 3/5: Suggesting action verbs...")
+        action_verbs = suggest_action_verbs_with_ai(client, resume_text, profile)
+        
+        # Step 4: Suggest quantifications with context
+        st.info("📊 Step 4/5: Finding quantification opportunities...")
+        quantifications = suggest_quantifications_with_ai(client, resume_text, profile)
+        
+        # Step 5: Suggest formatting improvements
+        st.info("🎨 Step 5/5: Analyzing formatting...")
+        formatting = suggest_formatting_with_ai(client, resume_text, profile)
+        
+        # Compile all improvements
+        improvements = {
+            'weak_phrases': weak_phrases,
+            'action_verbs': action_verbs,
+            'quantifications': quantifications,
+            'formatting': formatting
+        }
+        
+        # Calculate scores
+        current_score = basic_analysis.get('overall_score', basic_analysis.get('ats_score', 50))
+        potential_score = min(100, current_score + 20 + len(weak_phrases) * 2)
+        
+        # Generate priority recommendations
+        priority_recommendations = {
+            'high_priority': [],
+            'medium_priority': [],
+            'low_priority': []
+        }
+        
+        if weak_phrases:
+            priority_recommendations['high_priority'].append(
+                f"Replace {len(weak_phrases)} weak phrases with stronger alternatives"
+            )
+        if quantifications:
+            priority_recommendations['high_priority'].append(
+                f"Add quantifiable metrics to {len(quantifications)} achievements"
+            )
+        if action_verbs:
+            priority_recommendations['medium_priority'].append(
+                "Diversify action verbs across different categories"
+            )
+        if formatting:
+            priority_recommendations['medium_priority'].append(
+                f"Address {len(formatting)} formatting issues"
             )
         
-        # Extraire et parser la réponse
-        response_text = completion.choices[0].message.content
+        # Enrichir l'analyse basique avec DeepSeek
+        enhanced_analysis = basic_analysis.copy()
+        enhanced_analysis.update({
+            'deepseek_enabled': True,
+            'deepseek_weak_phrases': weak_phrases,
+            'deepseek_action_verbs': action_verbs,
+            'deepseek_quantification': quantifications,
+            'deepseek_formatting': formatting,
+            'deepseek_recommendations': priority_recommendations,
+            'deepseek_optimized': {},  # Will be generated separately when user wants to download
+            'deepseek_scores': {
+                'current': current_score,
+                'potential': potential_score,
+                'areas': ['Language', 'Quantification', 'Formatting']
+            },
+            'candidate_profile': profile  # Store profile for later use
+        })
         
-        # Essayer de parser le JSON
-        try:
-            # Extraire le JSON de la réponse (peut être entouré de ```json...```)
-            json_match = re.search(r'```json\s*(.*?)\s*```', response_text, re.DOTALL)
-            if json_match:
-                json_text = json_match.group(1)
-            else:
-                json_text = response_text
-            
-            deepseek_data = json.loads(json_text)
-            
-            # Enrichir l'analyse basique avec DeepSeek
-            enhanced_analysis = basic_analysis.copy()
-            enhanced_analysis.update({
-                'deepseek_enabled': True,
-                'deepseek_weak_phrases': deepseek_data.get('weak_phrases', []),
-                'deepseek_action_verbs': deepseek_data.get('action_verbs', {}),
-                'deepseek_quantification': deepseek_data.get('quantification', []),
-                'deepseek_formatting': deepseek_data.get('formatting', []),
-                'deepseek_recommendations': deepseek_data.get('priority_recommendations', {}),
-                'deepseek_optimized': deepseek_data.get('optimized_sections', {}),
-                'deepseek_scores': deepseek_data.get('improvement_score', {}),
-                'deepseek_raw_response': response_text
-            })
-            
-            st.success("✅ Analyse DeepSeek R1 terminée avec succès!")
-            return enhanced_analysis
-            
-        except json.JSONDecodeError:
-            # Si JSON invalide, retourner la réponse brute
-            st.warning("⚠️ Réponse DeepSeek reçue mais format non-JSON, utilisation en mode texte")
-            enhanced_analysis = basic_analysis.copy()
-            enhanced_analysis.update({
-                'deepseek_enabled': True,
-                'deepseek_raw_response': response_text,
-                'deepseek_text_mode': True
-            })
-            return enhanced_analysis
+        st.success("✅ Analyse DeepSeek R1 terminée avec succès!")
+        return enhanced_analysis
         
     except Exception as e:
         st.error(f"❌ Erreur DeepSeek R1: {str(e)}")
@@ -812,49 +1086,181 @@ def main():
             
             # Download report
             st.markdown("---")
-            st.markdown("### 📥 Download Optimized Resume")
+            st.markdown("### 📥 Generate & Download Optimized Resume")
             
-            # Check if DeepSeek generated optimized content
-            if rewrite.get('deepseek_enabled') and rewrite.get('deepseek_optimized'):
-                st.success("✅ Une version optimisée de votre CV a été générée !")
+            # Check if DeepSeek is enabled
+            if rewrite.get('deepseek_enabled'):
+                st.info("💡 Click 'Generate Optimized Resume' to create an editable version based on AI suggestions")
                 
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    # Génération DOCX
-                    try:
-                        with st.spinner("Generating DOCX..."):
-                            docx_buffer = generate_optimized_resume_docx(parsed["text"], rewrite)
+                # Button to generate optimized resume
+                if st.button("✨ Generate Optimized Resume", type="primary"):
+                    with st.spinner("🤖 Generating optimized resume content..."):
+                        # Get client and profile
+                        client = st.session_state.get('rewriter_deepseek_client')
+                        profile = rewrite.get('candidate_profile', {})
+                        improvements = {
+                            'weak_phrases': rewrite.get('deepseek_weak_phrases', []),
+                            'action_verbs': rewrite.get('deepseek_action_verbs', {}),
+                            'quantifications': rewrite.get('deepseek_quantification', []),
+                            'formatting': rewrite.get('deepseek_formatting', [])
+                        }
                         
-                        st.download_button(
-                            label="📄 Download as DOCX",
-                            data=docx_buffer,
-                            file_name=f"optimized_resume_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx",
-                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                            help="Télécharger le CV optimisé en format Word"
+                        # Generate optimized content
+                        optimized_content = generate_optimized_resume_content(
+                            client, parsed["text"], profile, improvements
                         )
-                    except Exception as e:
-                        st.error(f"Error generating DOCX: {str(e)}")
-                
-                with col2:
-                    # Génération PDF
-                    try:
-                        with st.spinner("Generating PDF..."):
-                            pdf_buffer = generate_optimized_resume_pdf(parsed["text"], rewrite)
                         
-                        st.download_button(
-                            label="📕 Download as PDF",
-                            data=pdf_buffer,
-                            file_name=f"optimized_resume_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
-                            mime="application/pdf",
-                            help="Télécharger le CV optimisé en format PDF"
+                        # Store in session state
+                        st.session_state['optimized_resume_content'] = optimized_content
+                        st.success("✅ Optimized resume generated! You can now edit it below.")
+                        st.rerun()
+                
+                # Show editing interface if content is generated
+                if 'optimized_resume_content' in st.session_state:
+                    st.markdown("---")
+                    st.markdown("### ✏️ Edit Your Optimized Resume")
+                    st.info("📝 Review and modify the content below before downloading")
+                    
+                    content = st.session_state['optimized_resume_content']
+                    
+                    # Editable sections
+                    col1, col2 = st.columns([2, 1])
+                    
+                    with col1:
+                        st.markdown("#### Professional Summary")
+                        edited_summary = st.text_area(
+                            "Summary",
+                            value=content.get('summary', ''),
+                            height=100,
+                            key="edit_summary",
+                            label_visibility="collapsed"
                         )
-                    except ImportError:
-                        st.warning("⚠️ PDF generation requires reportlab. Install with: pip install reportlab")
-                    except Exception as e:
-                        st.error(f"Error generating PDF: {str(e)}")
+                        
+                        st.markdown("#### Professional Experience")
+                        # Handle experience as list or string
+                        exp_value = content.get('experience', [])
+                        if isinstance(exp_value, list):
+                            exp_text = '\n'.join(exp_value)
+                        else:
+                            exp_text = exp_value
+                        
+                        edited_experience = st.text_area(
+                            "Experience",
+                            value=exp_text,
+                            height=200,
+                            key="edit_experience",
+                            label_visibility="collapsed"
+                        )
+                        
+                        st.markdown("#### Skills")
+                        edited_skills = st.text_area(
+                            "Skills",
+                            value=content.get('skills', ''),
+                            height=100,
+                            key="edit_skills",
+                            label_visibility="collapsed"
+                        )
+                        
+                        st.markdown("#### Education")
+                        edited_education = st.text_area(
+                            "Education",
+                            value=content.get('education', ''),
+                            height=80,
+                            key="edit_education",
+                            label_visibility="collapsed"
+                        )
+                    
+                    with col2:
+                        st.markdown("#### Actions")
+                        st.markdown("**Preview Tips:**")
+                        st.caption("• Review each section carefully")
+                        st.caption("• Check for accuracy")
+                        st.caption("• Ensure metrics are realistic")
+                        st.caption("• Verify all information")
+                        
+                        st.markdown("---")
+                        
+                        # Save edited content
+                        if st.button("💾 Save Edits", use_container_width=True):
+                            st.session_state['optimized_resume_content'] = {
+                                'summary': edited_summary,
+                                'experience': edited_experience,
+                                'skills': edited_skills,
+                                'education': edited_education
+                            }
+                            st.success("✅ Edits saved!")
+                        
+                        # Reset button
+                        if st.button("🔄 Reset to AI Version", use_container_width=True):
+                            # Regenerate content
+                            with st.spinner("Regenerating..."):
+                                client = st.session_state.get('rewriter_deepseek_client')
+                                profile = rewrite.get('candidate_profile', {})
+                                improvements = {
+                                    'weak_phrases': rewrite.get('deepseek_weak_phrases', []),
+                                    'action_verbs': rewrite.get('deepseek_action_verbs', {}),
+                                    'quantifications': rewrite.get('deepseek_quantification', []),
+                                    'formatting': rewrite.get('deepseek_formatting', [])
+                                }
+                                optimized_content = generate_optimized_resume_content(
+                                    client, parsed["text"], profile, improvements
+                                )
+                                st.session_state['optimized_resume_content'] = optimized_content
+                                st.success("✅ Reset to AI version!")
+                                st.rerun()
+                    
+                    # Download buttons
+                    st.markdown("---")
+                    st.markdown("### 📥 Download Your Resume")
+                    
+                    # Prepare optimized data for download
+                    download_data = rewrite.copy()
+                    download_data['deepseek_optimized'] = {
+                        'summary': edited_summary,
+                        'experience': [line for line in edited_experience.split('\n') if line.strip()],
+                        'skills': edited_skills,
+                        'education': edited_education
+                    }
+                    
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        # Génération DOCX
+                        try:
+                            with st.spinner("Generating DOCX..."):
+                                docx_buffer = generate_optimized_resume_docx(parsed["text"], download_data)
+                            
+                            st.download_button(
+                                label="📄 Download as DOCX",
+                                data=docx_buffer,
+                                file_name=f"optimized_resume_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx",
+                                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                help="Download optimized resume in Word format",
+                                use_container_width=True
+                            )
+                        except Exception as e:
+                            st.error(f"Error generating DOCX: {str(e)}")
+                    
+                    with col2:
+                        # Génération PDF
+                        try:
+                            with st.spinner("Generating PDF..."):
+                                pdf_buffer = generate_optimized_resume_pdf(parsed["text"], download_data)
+                            
+                            st.download_button(
+                                label="📕 Download as PDF",
+                                data=pdf_buffer,
+                                file_name=f"optimized_resume_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
+                                mime="application/pdf",
+                                help="Download optimized resume in PDF format",
+                                use_container_width=True
+                            )
+                        except ImportError:
+                            st.warning("⚠️ PDF generation requires reportlab. Install with: pip install reportlab")
+                        except Exception as e:
+                            st.error(f"Error generating PDF: {str(e)}")
             else:
-                st.info("💡 Activez DeepSeek R1 pour générer une version complète optimisée de votre CV téléchargeable en PDF/DOCX")
+                st.info("💡 Enable DeepSeek R1 to generate a complete optimized version of your resume downloadable in PDF/DOCX")
             
             # Standard report downloads
             st.markdown("---")
