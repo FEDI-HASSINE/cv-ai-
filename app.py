@@ -38,11 +38,28 @@ st.markdown(f"""
             padding-bottom: 2rem;
         }}
         .feature-card {{
-            background-color: #f8f9fa;
-            padding: 1.5rem;
-            border-radius: 10px;
-            border-left: 5px solid {COLORS['primary']};
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 12px;
+            border: 2px solid {COLORS['primary']};
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
             margin: 1rem 0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }}
+        .feature-card:hover {{
+            transform: translateY(-4px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15), 0 4px 6px rgba(0, 0, 0, 0.1);
+        }}
+        .feature-card h3 {{
+            color: {COLORS['primary']};
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }}
+        .feature-card p {{
+            color: #2d3748;
+            font-size: 1rem;
+            line-height: 1.6;
         }}
         .metric-card {{
             background: linear-gradient(135deg, {COLORS['primary']}, {COLORS['info']});
