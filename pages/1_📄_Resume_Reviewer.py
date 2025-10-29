@@ -9,6 +9,9 @@ from pathlib import Path
 from datetime import datetime
 import json
 
+# ⭐ NOUVEAU: Import pour DeepSeek R1 via OpenRouter
+from openai import OpenAI
+
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -54,6 +57,172 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
+
+def extract_section(text: str, keyword: str) -> list:
+    """
+    Extrait une section du texte DeepSeek
+    
+    Args:
+        text: Texte complet de l'analyse
+        keyword: Mot-clé pour identifier la section
+        
+    Returns:
+        Liste des éléments de la section
+    """
+    lines = text.split('\n')
+    section_lines = []
+    in_section = False
+    
+    for line in lines:
+        if keyword in line.upper():
+            in_section = True
+            continue
+        if in_section:
+            if line.strip().startswith(('-', '•', '*')):
+                section_lines.append(line.strip())
+            elif line.strip() and not any(line.strip().startswith(str(i)) for i in range(1, 10)):
+                # Stop if we hit a line that doesn't start with bullet or number
+                if not line.strip().startswith(('-', '•', '*')):
+                    break
+    
+    return section_lines if section_lines else ["Analyse en cours..."]
+
+
+def analyze_with_deepseek(resume_text: str, basic_analysis: dict) -> dict:
+    """
+    Analyse avancée du CV avec DeepSeek R1 via 3 prompts séparés
+    
+    Args:
+        resume_text: Texte complet du CV
+        basic_analysis: Résultats de l'analyse basique
+        
+    Returns:
+        dict: Analyse enrichie avec insights DeepSeek
+    """
+    if not st.session_state.get('use_deepseek', False):
+        return basic_analysis
+    
+    try:
+        client = st.session_state.deepseek_client
+        
+        # Informations de base pour tous les prompts
+        base_info = f"""RESUME TEXT:
+{resume_text}
+
+BASIC ANALYSIS:
+- ATS Score: {basic_analysis['ats_score']}/100
+- Experience: {basic_analysis['experience_years']} years
+- Technical Skills: {', '.join(basic_analysis['technical_skills'][:10])}
+- Soft Skills: {', '.join(basic_analysis['soft_skills'][:5])}
+"""
+
+        # ⭐ PROMPT 1: Générer Strengths & Weaknesses
+        prompt_strengths = f"""You are an expert HR analyst. Analyze this resume and identify its strengths and weaknesses.
+
+{base_info}
+
+Please provide:
+
+**STRENGTHS** (3-5 detailed points):
+- What makes this resume stand out?
+- What are the candidate's key competitive advantages?
+
+**WEAKNESSES** (3-5 detailed points):
+- What critical elements are missing?
+- What could significantly improve the resume?
+
+Format your response with clear sections using bullet points (- or •).
+Be specific, actionable, and professional."""
+
+        # Appel API pour Strengths & Weaknesses
+        completion_strengths = client.chat.completions.create(
+            extra_headers={
+                "HTTP-Referer": st.session_state.get('site_url', ''),
+                "X-Title": st.session_state.get('site_name', ''),
+            },
+            model="tngtech/deepseek-r1t2-chimera:free",
+            messages=[{"role": "user", "content": prompt_strengths}],
+            temperature=0.7,
+            max_tokens=1500
+        )
+        
+        strengths_weaknesses_text = completion_strengths.choices[0].message.content
+        
+        # ⭐ PROMPT 2: Générer Improvement Suggestions
+        prompt_suggestions = f"""You are an expert career coach. Analyze this resume and provide actionable improvement suggestions.
+
+{base_info}
+
+Please provide:
+
+**IMPROVEMENT SUGGESTIONS** (5-7 actionable recommendations):
+- Specific, prioritized actions to enhance the resume
+- Include examples where applicable
+- Focus on high-impact changes
+
+Format your response with numbered or bulleted suggestions.
+Be specific, actionable, and professional."""
+
+        # Appel API pour Improvement Suggestions
+        completion_suggestions = client.chat.completions.create(
+            extra_headers={
+                "HTTP-Referer": st.session_state.get('site_url', ''),
+                "X-Title": st.session_state.get('site_name', ''),
+            },
+            model="tngtech/deepseek-r1t2-chimera:free",
+            messages=[{"role": "user", "content": prompt_suggestions}],
+            temperature=0.7,
+            max_tokens=1500
+        )
+        
+        suggestions_text = completion_suggestions.choices[0].message.content
+        
+        # ⭐ PROMPT 3: Générer Complete Analysis
+        prompt_complete = f"""You are an expert HR analyst and career coach. Provide a comprehensive resume analysis.
+
+{base_info}
+
+Provide a complete professional assessment covering:
+- Overall impression
+- Key observations
+- Market competitiveness
+- Hiring potential
+
+Be thorough, insightful, and professional."""
+
+        # Appel API pour Complete Analysis
+        completion_complete = client.chat.completions.create(
+            extra_headers={
+                "HTTP-Referer": st.session_state.get('site_url', ''),
+                "X-Title": st.session_state.get('site_name', ''),
+            },
+            model="tngtech/deepseek-r1t2-chimera:free",
+            messages=[{"role": "user", "content": prompt_complete}],
+            temperature=0.7,
+            max_tokens=2000
+        )
+        
+        complete_analysis_text = completion_complete.choices[0].message.content
+        
+        # Enrichir l'analyse basique
+        basic_analysis['deepseek_analysis'] = {
+            'strengths_weaknesses_full': strengths_weaknesses_text,
+            'suggestions_full': suggestions_text,
+            'complete_analysis': complete_analysis_text,
+            'strengths_detailed': extract_section(strengths_weaknesses_text, 'STRENGTHS'),
+            'weaknesses_detailed': extract_section(strengths_weaknesses_text, 'WEAKNESSES'),
+            'suggestions_detailed': extract_section(suggestions_text, 'SUGGESTION')
+        }
+        
+        st.success("✅ Analyse DeepSeek R1 complétée avec succès!")
+        
+    except Exception as e:
+        st.error(f"❌ Erreur DeepSeek R1: {str(e)}")
+        st.info("💡 Utilisation de l'analyse standard")
+    
+    return basic_analysis
+
+
 def main():
     st.title("📄 Resume Reviewer")
     st.markdown("Upload your resume for comprehensive AI-powered analysis")
@@ -95,21 +264,76 @@ def main():
     with st.sidebar:
         st.markdown("---")
         st.subheader("🤖 AI Configuration")
-        st.markdown("*Optional: For better extraction*")
+        st.markdown("*Choisissez votre moteur d'analyse IA*")
         
-        openai_key = st.text_input(
-            "OpenAI API Key",
-            type="password",
-            help="Enter your OpenAI API key for GPT-powered extraction (optional)",
-            placeholder="sk-..."
+        # Sélecteur de modèle IA
+        ai_model = st.radio(
+            "Modèle IA",
+            options=["DeepSeek R1 (Recommandé)", "OpenAI GPT", "Hugging Face (Gratuit)"],
+            index=0,
+            help="DeepSeek R1 offre les meilleures performances pour l'analyse de CV"
         )
         
-        if openai_key:
-            st.success("✅ OpenAI key provided - Using GPT for extraction")
-            # Reinitialize analyzer with API key
-            st.session_state.analyzer = ResumeAnalyzer(openai_api_key=openai_key)
-        else:
-            st.info("💡 Using free Hugging Face models (may be slower first time)")
+        if ai_model == "DeepSeek R1 (Recommandé)":
+            st.markdown("### 🚀 DeepSeek R1 Configuration")
+            
+            openrouter_key = st.text_input(
+                "OpenRouter API Key",
+                type="password",
+                help="Votre clé API OpenRouter pour accéder à DeepSeek R1",
+                placeholder="sk-or-v1-...",
+                key="openrouter_key"
+            )
+            
+            site_url = st.text_input(
+                "Site URL (Optionnel)",
+                placeholder="https://votre-site.com",
+                help="Pour les rankings sur openrouter.ai",
+                key="site_url"
+            )
+            
+            site_name = st.text_input(
+                "Site Name (Optionnel)",
+                placeholder="Mon Application CV",
+                help="Nom de votre application",
+                key="site_name"
+            )
+            
+            if openrouter_key:
+                st.success("✅ DeepSeek R1 activé - Analyse avancée disponible")
+                # Initialiser le client DeepSeek
+                st.session_state.deepseek_client = OpenAI(
+                    base_url="https://openrouter.ai/api/v1",
+                    api_key=openrouter_key,
+                )
+                st.session_state.use_deepseek = True
+                st.session_state.site_url = site_url or "https://github.com/FEDI-HASSINE/cv-ai-"
+                st.session_state.site_name = site_name or "UtopiaHire CV Analyzer"
+            else:
+                st.warning("⚠️ Clé API requise pour DeepSeek R1")
+                st.session_state.use_deepseek = False
+                st.info("💡 Obtenez votre clé sur: https://openrouter.ai/")
+        
+        elif ai_model == "OpenAI GPT":
+            st.markdown("### 🔓 OpenAI Configuration")
+            openai_key = st.text_input(
+                "OpenAI API Key",
+                type="password",
+                help="Votre clé OpenAI pour GPT",
+                placeholder="sk-..."
+            )
+            
+            if openai_key:
+                st.success("✅ OpenAI GPT activé")
+                st.session_state.analyzer = ResumeAnalyzer(openai_api_key=openai_key)
+                st.session_state.use_deepseek = False
+            else:
+                st.info("💡 Utilisation des modèles gratuits")
+                st.session_state.use_deepseek = False
+        
+        else:  # Hugging Face
+            st.info("💡 Utilisation des modèles Hugging Face gratuits (peut être lent)")
+            st.session_state.use_deepseek = False
     
     # File upload
     uploaded_file = st.file_uploader(
@@ -144,14 +368,26 @@ def main():
         
         st.info(f"📊 Extracted {parsed['word_count']} words, {parsed['char_count']} characters")
         
-        # Show extracted text preview for debugging
+        # Afficher TOUT le texte extrait (pas de limite)
         with st.expander("🔍 View Extracted Text (for debugging)", expanded=False):
-            st.text_area("Raw Text", parsed["text"][:2000] + "..." if len(parsed["text"]) > 2000 else parsed["text"], height=200)
+            st.text_area(
+                "Raw Text (Complete)", 
+                parsed["text"], 
+                height=400,  # Augmenté pour plus de visibilité
+                help="Texte complet extrait du CV (sans limite de caractères)"
+            )
+            st.info(f"📊 Total: {len(parsed['text'])} caractères | {len(parsed['text'].split())} mots")
         
         # Analyze button
         if st.button("🔍 Analyze Resume", type="primary"):
             with st.spinner("🤖 Analyzing your resume... This may take a moment."):
                 analysis = st.session_state.analyzer.analyze(parsed["text"])
+                
+                # ⭐ NOUVEAU: Enrichir avec DeepSeek si activé
+                if st.session_state.get('use_deepseek', False):
+                    with st.spinner("🚀 Enrichissement avec DeepSeek R1..."):
+                        analysis = analyze_with_deepseek(parsed["text"], analysis)
+                
                 st.session_state.analysis = analysis
         
         # Display results if analysis exists
@@ -487,6 +723,55 @@ def main():
                         st.markdown(f"**{idx}.** {suggestion}")
                 else:
                     st.success("Your resume looks great!")
+            
+            # ⭐ NOUVEAU: Section DeepSeek R1 Analysis
+            if 'deepseek_analysis' in analysis:
+                st.markdown("---")
+                st.markdown("## 🤖 DeepSeek R1 - Analyse Avancée")
+                
+                with st.expander("📊 Analyse Complète DeepSeek", expanded=True):
+                    st.markdown(analysis['deepseek_analysis']['complete_analysis'])
+                
+                st.markdown("---")
+                
+                # Affichage en colonnes pour Strengths et Weaknesses
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    # Strengths détaillées
+                    st.markdown("### 💪 Forces Identifiées (DeepSeek)")
+                    if analysis['deepseek_analysis']['strengths_detailed']:
+                        for strength in analysis['deepseek_analysis']['strengths_detailed']:
+                            st.markdown(f"{strength}")
+                    else:
+                        st.info("Aucune force spécifique identifiée")
+                    
+                    # Afficher aussi le texte brut des forces
+                    with st.expander("📄 Détails Forces & Faiblesses", expanded=False):
+                        st.markdown(analysis['deepseek_analysis']['strengths_weaknesses_full'])
+                
+                with col2:
+                    # Weaknesses détaillées
+                    st.markdown("### ⚠️ Points à Améliorer (DeepSeek)")
+                    if analysis['deepseek_analysis']['weaknesses_detailed']:
+                        for weakness in analysis['deepseek_analysis']['weaknesses_detailed']:
+                            st.markdown(f"{weakness}")
+                    else:
+                        st.success("Aucune faiblesse majeure identifiée")
+                
+                st.markdown("---")
+                
+                # Suggestions détaillées
+                st.markdown("### 💡 Recommandations Détaillées (DeepSeek)")
+                if analysis['deepseek_analysis']['suggestions_detailed']:
+                    for i, suggestion in enumerate(analysis['deepseek_analysis']['suggestions_detailed'], 1):
+                        st.markdown(f"{i}. {suggestion}")
+                else:
+                    st.info("Aucune suggestion spécifique")
+                
+                # Afficher aussi le texte brut des suggestions
+                with st.expander("📄 Détails Suggestions Complètes", expanded=False):
+                    st.markdown(analysis['deepseek_analysis']['suggestions_full'])
             
             # Download report button
             st.markdown("---")
