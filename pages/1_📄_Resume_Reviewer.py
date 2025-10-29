@@ -137,8 +137,8 @@ Be specific, actionable, and professional."""
         # Appel API pour Strengths & Weaknesses
         completion_strengths = client.chat.completions.create(
             extra_headers={
-                "HTTP-Referer": st.session_state.get('site_url', ''),
-                "X-Title": st.session_state.get('site_name', ''),
+                "HTTP-Referer": st.session_state.get('site_url', '') or "https://github.com/FEDI-HASSINE/cv-ai-",
+                "X-Title": st.session_state.get('site_name', '') or "UtopiaHire CV Analyzer",
             },
             model="tngtech/deepseek-r1t2-chimera:free",
             messages=[{"role": "user", "content": prompt_strengths}],
@@ -166,8 +166,8 @@ Be specific, actionable, and professional."""
         # Appel API pour Improvement Suggestions
         completion_suggestions = client.chat.completions.create(
             extra_headers={
-                "HTTP-Referer": st.session_state.get('site_url', ''),
-                "X-Title": st.session_state.get('site_name', ''),
+                "HTTP-Referer": st.session_state.get('site_url', '') or "https://github.com/FEDI-HASSINE/cv-ai-",
+                "X-Title": st.session_state.get('site_name', '') or "UtopiaHire CV Analyzer",
             },
             model="tngtech/deepseek-r1t2-chimera:free",
             messages=[{"role": "user", "content": prompt_suggestions}],
@@ -193,8 +193,8 @@ Be thorough, insightful, and professional."""
         # Appel API pour Complete Analysis
         completion_complete = client.chat.completions.create(
             extra_headers={
-                "HTTP-Referer": st.session_state.get('site_url', ''),
-                "X-Title": st.session_state.get('site_name', ''),
+                "HTTP-Referer": st.session_state.get('site_url', '') or "https://github.com/FEDI-HASSINE/cv-ai-",
+                "X-Title": st.session_state.get('site_name', '') or "UtopiaHire CV Analyzer",
             },
             model="tngtech/deepseek-r1t2-chimera:free",
             messages=[{"role": "user", "content": prompt_complete}],
@@ -307,8 +307,6 @@ def main():
                     api_key=openrouter_key,
                 )
                 st.session_state.use_deepseek = True
-                st.session_state.site_url = site_url or "https://github.com/FEDI-HASSINE/cv-ai-"
-                st.session_state.site_name = site_name or "UtopiaHire CV Analyzer"
             else:
                 st.warning("⚠️ Clé API requise pour DeepSeek R1")
                 st.session_state.use_deepseek = False
