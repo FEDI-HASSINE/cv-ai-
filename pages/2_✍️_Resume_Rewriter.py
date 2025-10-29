@@ -259,10 +259,18 @@ def generate_optimized_resume_docx(original_text: str, optimized_data: dict) -> 
         # Experience optimisée
         if optimized_sections.get('experience'):
             doc.add_heading('PROFESSIONAL EXPERIENCE', 1)
-            for exp in optimized_sections['experience']:
-                p = doc.add_paragraph()
-                p.add_run(exp.get('title', '')).bold = True
-                doc.add_paragraph(exp.get('description', ''))
+            experience_data = optimized_sections['experience']
+            # Handle different data types
+            if isinstance(experience_data, str):
+                doc.add_paragraph(experience_data)
+            elif isinstance(experience_data, list):
+                for exp in experience_data:
+                    if isinstance(exp, dict):
+                        p = doc.add_paragraph()
+                        p.add_run(exp.get('title', '')).bold = True
+                        doc.add_paragraph(exp.get('description', ''))
+                    elif isinstance(exp, str):
+                        doc.add_paragraph(exp)
             doc.add_paragraph()
         
         # Skills
@@ -285,14 +293,20 @@ def generate_optimized_resume_docx(original_text: str, optimized_data: dict) -> 
         
         if recs.get('high_priority'):
             doc.add_heading('High Priority Changes Applied:', 2)
-            for rec in recs['high_priority']:
-                doc.add_paragraph(f"• {rec}", style='List Bullet')
+            high_priority = recs['high_priority']
+            if isinstance(high_priority, list):
+                for rec in high_priority:
+                    rec_text = rec if isinstance(rec, str) else str(rec)
+                    doc.add_paragraph(f"• {rec_text}", style='List Bullet')
             doc.add_paragraph()
         
         if recs.get('medium_priority'):
             doc.add_heading('Medium Priority Improvements:', 2)
-            for rec in recs['medium_priority']:
-                doc.add_paragraph(f"• {rec}", style='List Bullet')
+            medium_priority = recs['medium_priority']
+            if isinstance(medium_priority, list):
+                for rec in medium_priority:
+                    rec_text = rec if isinstance(rec, str) else str(rec)
+                    doc.add_paragraph(f"• {rec_text}", style='List Bullet')
             doc.add_paragraph()
     
     # Sauvegarder en mémoire
