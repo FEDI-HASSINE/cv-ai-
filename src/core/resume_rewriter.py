@@ -63,44 +63,62 @@ class ResumeRewriter:
             "handled": "managed"
         }
     
-    def rewrite(self, resume_text: str, analysis: Dict[str, Any] = None) -> Dict[str, Any]:
+    def rewrite(self, resume_text: str, analysis: Dict[str, Any] = None, use_static_objects: bool = True) -> Dict[str, Any]:
         """
         Generate rewriting suggestions for resume
         
         Args:
             resume_text: Original resume text
             analysis: Optional analysis results from ResumeAnalyzer
+            use_static_objects: Whether to use static objects (only in fallback mode)
             
         Returns:
             Rewriting suggestions and improvements
         """
         cleaned_text = clean_text(resume_text)
         
-        # Detect weak phrases
-        weak_phrase_suggestions = self._detect_weak_phrases(cleaned_text)
-        
-        # Suggest action verbs
-        action_verb_suggestions = self._suggest_action_verbs(cleaned_text)
-        
-        # Quantification opportunities
-        quantification_suggestions = self._find_quantification_opportunities(cleaned_text)
-        
-        # Formatting improvements
-        formatting_suggestions = self._suggest_formatting_improvements(cleaned_text)
-        
-        # Content enhancement
-        content_suggestions = self._suggest_content_enhancements(cleaned_text, analysis)
-        
-        # Generate optimized sections
-        optimized_sections = self._generate_optimized_sections(cleaned_text)
-        
-        # Overall recommendations
-        recommendations = self._generate_recommendations(
-            weak_phrase_suggestions,
-            action_verb_suggestions,
-            quantification_suggestions,
-            formatting_suggestions
-        )
+        # Only use static objects if explicitly requested (fallback mode)
+        if use_static_objects:
+            # Detect weak phrases
+            weak_phrase_suggestions = self._detect_weak_phrases(cleaned_text)
+            
+            # Suggest action verbs
+            action_verb_suggestions = self._suggest_action_verbs(cleaned_text)
+            
+            # Quantification opportunities
+            quantification_suggestions = self._find_quantification_opportunities(cleaned_text)
+            
+            # Formatting improvements
+            formatting_suggestions = self._suggest_formatting_improvements(cleaned_text)
+            
+            # Content enhancement
+            content_suggestions = self._suggest_content_enhancements(cleaned_text, analysis)
+            
+            # Generate optimized sections
+            optimized_sections = self._generate_optimized_sections(cleaned_text)
+            
+            # Overall recommendations
+            recommendations = self._generate_recommendations(
+                weak_phrase_suggestions,
+                action_verb_suggestions,
+                quantification_suggestions,
+                formatting_suggestions
+            )
+            
+            improvement_score = self._calculate_improvement_potential(
+                weak_phrase_suggestions,
+                quantification_suggestions
+            )
+        else:
+            # In non-fallback mode (AI mode), return empty static objects
+            weak_phrase_suggestions = []
+            action_verb_suggestions = {}
+            quantification_suggestions = []
+            formatting_suggestions = []
+            content_suggestions = []
+            optimized_sections = {}
+            recommendations = []
+            improvement_score = 0
         
         return {
             "weak_phrases": weak_phrase_suggestions,
@@ -110,10 +128,7 @@ class ResumeRewriter:
             "content_enhancements": content_suggestions,
             "optimized_sections": optimized_sections,
             "recommendations": recommendations,
-            "improvement_score": self._calculate_improvement_potential(
-                weak_phrase_suggestions,
-                quantification_suggestions
-            )
+            "improvement_score": improvement_score
         }
     
     def _detect_weak_phrases(self, text: str) -> List[Dict[str, str]]:

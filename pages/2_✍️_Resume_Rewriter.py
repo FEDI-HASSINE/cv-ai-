@@ -516,8 +516,15 @@ def main():
                     analysis = st.session_state.analyzer.analyze(parsed["text"])
                     st.session_state.analysis = analysis
                 
-                # Rewrite suggestions
-                rewrite = st.session_state.rewriter.rewrite(parsed["text"], analysis)
+                # Check if we're using AI mode (DeepSeek)
+                use_ai_mode = st.session_state.get('use_rewriter_deepseek', False)
+                
+                # Rewrite suggestions (only use static objects in fallback mode)
+                rewrite = st.session_state.rewriter.rewrite(
+                    parsed["text"], 
+                    analysis,
+                    use_static_objects=not use_ai_mode  # Disable static objects when using AI
+                )
                 
                 # Enrichir avec DeepSeek si activé
                 if st.session_state.get('use_rewriter_deepseek', False):
