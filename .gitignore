@@ -56,6 +56,7 @@ data/uploads/
 *.docx
 *.doc
 *.txt
+!requirements.txt
 
 # Models (if downloaded)
 models/
