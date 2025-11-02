@@ -16,3 +16,14 @@ reportlab>=3.6.0
 
 # Additional utilities
 requests>=2.31.0
+
+# Footprint Scanner - Web automation (LinkedIn best-effort scraping)
+playwright>=1.40.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-mock>=3.12.0
+
+# Type checking
+mypy>=1.7.0

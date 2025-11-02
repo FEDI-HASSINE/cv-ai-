@@ -1,0 +1,784 @@
+{
+  "meta": {
+    "scanned_at": "2025-11-02T19:16:28.100427",
+    "target": {
+      "github": "octocat",
+      "linkedin": null,
+      "stackoverflow": 22656
+    },
+    "platforms_analyzed": [
+      "GitHub",
+      "StackOverflow"
+    ]
+  },
+  "scores": {
+    "github": 82,
+    "stackoverflow": 75,
+    "linkedin": 0,
+    "overall": 79,
+    "ratings": {
+      "github": "Very Good",
+      "stackoverflow": "Very Good",
+      "linkedin": "Limited Presence",
+      "overall": "Very Good"
+    },
+    "breakdown": {
+      "github": {
+        "repos": {
+          "score": 8.0,
+          "count": 8
+        },
+        "stars": {
+          "score": 25,
+          "count": 20035
+        },
+        "followers": {
+          "score": 20,
+          "count": 20482
+        },
+        "activity": {
+          "score": 20,
+          "repos_updated_30d": 8
+        },
+        "languages": {
+          "score": 9.0,
+          "count": 3,
+          "top": [
+            "HTML",
+            "Ruby",
+            "CSS"
+          ]
+        }
+      },
+      "stackoverflow": {
+        "reputation": {
+          "score": 30,
+          "value": 1518960
+        },
+        "badges": {
+          "score": 25,
+          "gold": 892,
+          "silver": 9305,
+          "bronze": 9341,
+          "total": 19538
+        },
+        "answers": {
+          "score": 0,
+          "count": 0,
+          "total_score": 39243,
+          "accepted": 9
+        },
+        "questions": {
+          "score": 10,
+          "count": 0,
+          "total_score": 5662
+        },
+        "tags": {
+          "score": 10,
+          "count": 15,
+          "top": [
+            "c#",
+            "java",
+            ".net",
+            "linq",
+            "string"
+          ]
+        }
+      }
+    }
+  },
+  "insights": {
+    "strengths": [
+      "Excellent community recognition with 20035 stars",
+      "Consistently active on GitHub",
+      "Strong reputation on StackOverflow (1,518,960 points)",
+      "Earned 892 gold badge(s) - recognized expert",
+      "Active contributor with 19538 badges"
+    ],
+    "areas_for_improvement": [
+      "Limited answer contributions"
+    ],
+    "recommendations": [
+      "⭐ Excellent online presence - maintain your momentum!",
+      "🔧 Priority: Improve your LinkedIn presence (current score: 0)",
+      "⚖️ Work on balancing your presence across all platforms"
+    ]
+  },
+  "platform_insights": {
+    "github": {
+      "data": {
+        "username": "octocat",
+        "profile": {
+          "name": "The Octocat",
+          "bio": null,
+          "company": "@github",
+          "location": "San Francisco",
+          "email": "octocat@github.com",
+          "blog": "https://github.blog",
+          "twitter": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/583231?v=4",
+          "created_at": "2011-01-25T18:44:36Z",
+          "updated_at": "2025-10-30T16:07:45Z"
+        },
+        "statistics": {
+          "public_repos": 8,
+          "public_gists": 8,
+          "followers": 20482,
+          "following": 9,
+          "total_stars": 20035,
+          "total_forks": 159376,
+          "total_watchers": 20035
+        },
+        "repositories": {
+          "total": 8,
+          "top_repos": [
+            {
+              "name": "Spoon-Knife",
+              "full_name": "octocat/Spoon-Knife",
+              "description": "This repo is for demonstration purposes only.",
+              "url": "https://github.com/octocat/Spoon-Knife",
+              "stars": 13347,
+              "forks": 154235,
+              "language": "HTML",
+              "created_at": "2011-01-27T19:30:43Z",
+              "updated_at": "2025-11-02T11:14:42Z"
+            },
+            {
+              "name": "Hello-World",
+              "full_name": "octocat/Hello-World",
+              "description": "My first repository on GitHub!",
+              "url": "https://github.com/octocat/Hello-World",
+              "stars": 3232,
+              "forks": 3985,
+              "language": null,
+              "created_at": "2011-01-26T19:01:12Z",
+              "updated_at": "2025-11-02T17:26:46Z"
+            },
+            {
+              "name": "octocat.github.io",
+              "full_name": "octocat/octocat.github.io",
+              "description": null,
+              "url": "https://github.com/octocat/octocat.github.io",
+              "stars": 944,
+              "forks": 467,
+              "language": "CSS",
+              "created_at": "2014-03-18T20:54:39Z",
+              "updated_at": "2025-11-01T06:06:40Z"
+            },
+            {
+              "name": "hello-worId",
+              "full_name": "octocat/hello-worId",
+              "description": "My first repository on GitHub.",
+              "url": "https://github.com/octocat/hello-worId",
+              "stars": 640,
+              "forks": 256,
+              "language": null,
+              "created_at": "2014-06-18T21:26:19Z",
+              "updated_at": "2025-11-02T11:05:04Z"
+            },
+            {
+              "name": "linguist",
+              "full_name": "octocat/linguist",
+              "description": "Language Savant. If your repository's language is being reported incorrectly, send us a pull request!",
+              "url": "https://github.com/octocat/linguist",
+              "stars": 621,
+              "forks": 238,
+              "language": "Ruby",
+              "created_at": "2016-08-02T17:35:14Z",
+              "updated_at": "2025-11-02T11:13:46Z"
+            }
+          ]
+        },
+        "languages": {
+          "HTML": 1,
+          "Ruby": 1,
+          "CSS": 1
+        },
+        "collected_at": "2025-11-02T19:16:28.624770"
+      },
+      "insights": {
+        "strengths": [
+          "Excellent community recognition with 20035 stars",
+          "Consistently active on GitHub"
+        ],
+        "improvements": [],
+        "tips": [],
+        "key_metrics": {
+          "repos": 8,
+          "stars": 20035,
+          "followers": 20482,
+          "languages": 3
+        }
+      }
+    },
+    "stackoverflow": {
+      "data": {
+        "user_id": 22656,
+        "profile": {
+          "display_name": "Jon Skeet",
+          "profile_image": "https://www.gravatar.com/avatar/6d8ebb117e8d83d74ea95fbdd0f87e13?s=256&d=identicon&r=PG",
+          "link": "https://stackoverflow.com/users/22656/jon-skeet",
+          "location": "Reading, United Kingdom",
+          "website_url": "http://csharpindepth.com",
+          "about_me": "<p>Author of <a href=\"https://www.manning.com/books/c-sharp-in-depth-fourth-edition?a_aid=jonskeet&amp;a_bid=66d590c3\" rel=\"nofollow noreferrer\">C# in Depth</a></p>\n<p>Currently a software engineer at Google, working remotely but near London.<br />\nUsually a Microsoft MVP (C#, 2003-2010, 2011-)</p>\n<p>Sites / social:</p>\n<ul>\n<li>Mastodon: <a href=\"https://hachyderm.io/@jonskeet\" rel=\"nofollow noreferrer\">@jonskeet@hachyderm.io</a></li>\n<li><a href=\"https://csharpindepth.com\" rel=\"nofollow noref",
+          "creation_date": "2008-09-26T12:05:05",
+          "last_access_date": "2025-11-02T17:47:58"
+        },
+        "reputation": {
+          "score": 1518960,
+          "reputation_change_year": 22707,
+          "reputation_change_quarter": 1388,
+          "reputation_change_month": 20,
+          "reputation_change_week": 20,
+          "reputation_change_day": 20
+        },
+        "badges": {
+          "gold": 892,
+          "silver": 9305,
+          "bronze": 9341,
+          "total": 19538,
+          "recent_badges": [
+            {
+              "name": "Enlightened",
+              "rank": "silver",
+              "badge_type": "named",
+              "award_count": 4382,
+              "link": "https://stackoverflow.com/badges/19/enlightened"
+            },
+            {
+              "name": "Nice Answer",
+              "rank": "bronze",
+              "badge_type": "named",
+              "award_count": 8645,
+              "link": "https://stackoverflow.com/badges/23/nice-answer"
+            },
+            {
+              "name": "Good Answer",
+              "rank": "silver",
+              "badge_type": "named",
+              "award_count": 3092,
+              "link": "https://stackoverflow.com/badges/24/good-answer"
+            },
+            {
+              "name": "Guru",
+              "rank": "silver",
+              "badge_type": "named",
+              "award_count": 1459,
+              "link": "https://stackoverflow.com/badges/18/guru"
+            },
+            {
+              "name": "Yearling",
+              "rank": "silver",
+              "badge_type": "named",
+              "award_count": 17,
+              "link": "https://stackoverflow.com/badges/13/yearling"
+            },
+            {
+              "name": "Variety Reviewer",
+              "rank": "bronze",
+              "badge_type": "named",
+              "award_count": 3,
+              "link": "https://stackoverflow.com/badges/12169/variety-reviewer"
+            },
+            {
+              "name": "java-dateformat",
+              "rank": "bronze",
+              "badge_type": "tag_based",
+              "award_count": 1,
+              "link": "https://stackoverflow.com/badges/12334/java-dateformat"
+            },
+            {
+              "name": "Great Answer",
+              "rank": "gold",
+              "badge_type": "named",
+              "award_count": 677,
+              "link": "https://stackoverflow.com/badges/25/great-answer"
+            },
+            {
+              "name": "Caucus",
+              "rank": "bronze",
+              "badge_type": "named",
+              "award_count": 14,
+              "link": "https://stackoverflow.com/badges/1973/caucus"
+            },
+            {
+              "name": "Populist",
+              "rank": "gold",
+              "badge_type": "named",
+              "award_count": 91,
+              "link": "https://stackoverflow.com/badges/62/populist"
+            }
+          ]
+        },
+        "activity": {
+          "answers": {
+            "count": 0,
+            "score": 39243,
+            "accepted": 9,
+            "top_answers": [
+              {
+                "answer_id": 6841479,
+                "question_id": 6841333,
+                "score": 11931,
+                "is_accepted": true,
+                "creation_date": "2011-07-27T08:31:10",
+                "link": null,
+                "title": ""
+              },
+              {
+                "answer_id": 8881376,
+                "question_id": 8881291,
+                "score": 4764,
+                "is_accepted": true,
+                "creation_date": "2012-01-16T14:26:16",
+                "link": null,
+                "title": ""
+              },
+              {
+                "answer_id": 215422,
+                "question_id": 7074,
+                "score": 3832,
+                "is_accepted": false,
+                "creation_date": "2008-10-18T18:52:13",
+                "link": null,
+                "title": ""
+              },
+              {
+                "answer_id": 285184,
+                "question_id": 285177,
+                "score": 3431,
+                "is_accepted": true,
+                "creation_date": "2008-11-12T20:12:14",
+                "link": null,
+                "title": ""
+              },
+              {
+                "answer_id": 247623,
+                "question_id": 247621,
+                "score": 3234,
+                "is_accepted": true,
+                "creation_date": "2008-10-29T17:10:18",
+                "link": null,
+                "title": ""
+              },
+              {
+                "answer_id": 886979,
+                "question_id": 886955,
+                "score": 2780,
+                "is_accepted": true,
+                "creation_date": "2009-05-20T09:11:22",
+                "link": null,
+                "title": ""
+              },
+              {
+                "answer_id": 618596,
+                "question_id": 618535,
+                "score": 2621,
+                "is_accepted": true,
+                "creation_date": "2009-03-06T11:56:02",
+                "link": null,
+                "title": ""
+              },
+              {
+                "answer_id": 285809,
+                "question_id": 285793,
+                "score": 2610,
+                "is_accepted": true,
+                "creation_date": "2008-11-12T23:30:15",
+                "link": null,
+                "title": ""
+              },
+              {
+                "answer_id": 7325306,
+                "question_id": 7325278,
+                "score": 2113,
+                "is_accepted": true,
+                "creation_date": "2011-09-06T19:46:13",
+                "link": null,
+                "title": ""
+              },
+              {
+                "answer_id": 176274,
+                "question_id": 176264,
+                "score": 1927,
+                "is_accepted": true,
+                "creation_date": "2008-10-06T21:29:48",
+                "link": null,
+                "title": ""
+              }
+            ]
+          },
+          "questions": {
+            "count": 0,
+            "score": 5662,
+            "top_questions": [
+              {
+                "question_id": 247621,
+                "title": "What are the correct version numbers for C#?",
+                "score": 2922,
+                "answer_count": 13,
+                "view_count": 441173,
+                "is_answered": true,
+                "creation_date": "2008-10-29T17:09:40",
+                "link": "https://stackoverflow.com/questions/247621/what-are-the-correct-version-numbers-for-c",
+                "tags": [
+                  "c#",
+                  ".net",
+                  "visual-studio",
+                  ".net-core",
+                  ".net-framework-version"
+                ]
+              },
+              {
+                "question_id": 6256847,
+                "title": "Curious null-coalescing operator custom implicit conversion behaviour",
+                "score": 575,
+                "answer_count": 5,
+                "view_count": 27740,
+                "is_answered": true,
+                "creation_date": "2011-06-06T19:11:50",
+                "link": "https://stackoverflow.com/questions/6256847/curious-null-coalescing-operator-custom-implicit-conversion-behaviour",
+                "tags": [
+                  "c#",
+                  "null-coalescing-operator"
+                ]
+              },
+              {
+                "question_id": 406760,
+                "title": "What&#39;s your most controversial programming opinion?",
+                "score": 363,
+                "answer_count": 407,
+                "view_count": 314077,
+                "is_answered": true,
+                "creation_date": "2009-01-02T13:14:26",
+                "link": "https://stackoverflow.com/questions/406760/whats-your-most-controversial-programming-opinion",
+                "tags": [
+                  "language-agnostic"
+                ]
+              },
+              {
+                "question_id": 1583050,
+                "title": "Performance surprise with &quot;as&quot; and nullable types",
+                "score": 347,
+                "answer_count": 10,
+                "view_count": 38466,
+                "is_answered": true,
+                "creation_date": "2009-10-17T19:48:57",
+                "link": "https://stackoverflow.com/questions/1583050/performance-surprise-with-as-and-nullable-types",
+                "tags": [
+                  "c#",
+                  "performance",
+                  "clr",
+                  "nullable",
+                  "unboxing"
+                ]
+              },
+              {
+                "question_id": 194484,
+                "title": "What&#39;s the strangest corner case you&#39;ve seen in C# or .NET?",
+                "score": 322,
+                "answer_count": 37,
+                "view_count": 124471,
+                "is_answered": true,
+                "creation_date": "2008-10-11T19:30:45",
+                "link": "https://stackoverflow.com/questions/194484/whats-the-strangest-corner-case-youve-seen-in-c-or-net",
+                "tags": [
+                  "c#",
+                  ".net"
+                ]
+              },
+              {
+                "question_id": 215548,
+                "title": "What&#39;s the hardest or most misunderstood aspect of LINQ?",
+                "score": 282,
+                "answer_count": 42,
+                "view_count": 51739,
+                "is_answered": true,
+                "creation_date": "2008-10-18T20:47:40",
+                "link": "https://stackoverflow.com/questions/215548/whats-the-hardest-or-most-misunderstood-aspect-of-linq",
+                "tags": [
+                  "c#",
+                  "linq",
+                  "c#-3.0"
+                ]
+              },
+              {
+                "question_id": 521893,
+                "title": "What&#39;s the best name for a non-mutating &quot;add&quot; method on an immutable collection?",
+                "score": 232,
+                "answer_count": 76,
+                "view_count": 17623,
+                "is_answered": true,
+                "creation_date": "2009-02-06T19:49:29",
+                "link": "https://stackoverflow.com/questions/521893/whats-the-best-name-for-a-non-mutating-add-method-on-an-immutable-collection",
+                "tags": [
+                  "language-agnostic",
+                  "naming-conventions",
+                  "list",
+                  "immutability"
+                ]
+              },
+              {
+                "question_id": 31562791,
+                "title": "What makes the Visual Studio debugger stop evaluating a ToString override?",
+                "score": 224,
+                "answer_count": 1,
+                "view_count": 12164,
+                "is_answered": true,
+                "creation_date": "2015-07-22T12:12:21",
+                "link": "https://stackoverflow.com/questions/31562791/what-makes-the-visual-studio-debugger-stop-evaluating-a-tostring-override",
+                "tags": [
+                  "c#",
+                  "debugging",
+                  "visual-studio-2015"
+                ]
+              },
+              {
+                "question_id": 11593615,
+                "title": "Why would finding a type&#39;s initializer throw a NullReferenceException?",
+                "score": 198,
+                "answer_count": 2,
+                "view_count": 8851,
+                "is_answered": true,
+                "creation_date": "2012-07-21T15:51:34",
+                "link": "https://stackoverflow.com/questions/11593615/why-would-finding-a-types-initializer-throw-a-nullreferenceexception",
+                "tags": [
+                  ".net",
+                  "reflection",
+                  "nullreferenceexception",
+                  ".net-4.5",
+                  "typeinitializer"
+                ]
+              },
+              {
+                "question_id": 5027999,
+                "title": "C# 5 async CTP: why is internal &quot;state&quot; set to 0 in generated code before EndAwait call?",
+                "score": 197,
+                "answer_count": 4,
+                "view_count": 8353,
+                "is_answered": true,
+                "creation_date": "2011-02-17T10:55:14",
+                "link": "https://stackoverflow.com/questions/5027999/c-5-async-ctp-why-is-internal-state-set-to-0-in-generated-code-before-endawa",
+                "tags": [
+                  "c#",
+                  "asynchronous",
+                  "c#-5.0"
+                ]
+              }
+            ]
+          }
+        },
+        "tags": {
+          "top_tags": [
+            {
+              "name": "c#",
+              "answer_count": 19971,
+              "answer_score": 269184,
+              "question_count": 23,
+              "question_score": 2684
+            },
+            {
+              "name": "java",
+              "answer_count": 10583,
+              "answer_score": 159422,
+              "question_count": 1,
+              "question_score": 26
+            },
+            {
+              "name": ".net",
+              "answer_count": 5633,
+              "answer_score": 93295,
+              "question_count": 8,
+              "question_score": 793
+            },
+            {
+              "name": "linq",
+              "answer_count": 3000,
+              "answer_score": 38805,
+              "question_count": 0,
+              "question_score": 0
+            },
+            {
+              "name": "string",
+              "answer_count": 1008,
+              "answer_score": 25034,
+              "question_count": 2,
+              "question_score": 112
+            },
+            {
+              "name": "generics",
+              "answer_count": 1295,
+              "answer_score": 22740,
+              "question_count": 1,
+              "question_score": 117
+            },
+            {
+              "name": "date",
+              "answer_count": 477,
+              "answer_score": 18138,
+              "question_count": 0,
+              "question_score": 0
+            },
+            {
+              "name": "timezone",
+              "answer_count": 348,
+              "answer_score": 15338,
+              "question_count": 1,
+              "question_score": 26
+            },
+            {
+              "name": "multithreading",
+              "answer_count": 1078,
+              "answer_score": 13666,
+              "question_count": 0,
+              "question_score": 0
+            },
+            {
+              "name": "reflection",
+              "answer_count": 716,
+              "answer_score": 11970,
+              "question_count": 1,
+              "question_score": 198
+            }
+          ]
+        },
+        "collected_at": "2025-11-02T19:16:29.785747"
+      },
+      "insights": {
+        "strengths": [
+          "Strong reputation on StackOverflow (1,518,960 points)",
+          "Earned 892 gold badge(s) - recognized expert",
+          "Active contributor with 19538 badges"
+        ],
+        "improvements": [
+          "Limited answer contributions"
+        ],
+        "tips": [
+          "Answer questions regularly to build reputation"
+        ],
+        "key_metrics": {
+          "reputation": 1518960,
+          "badges": 19538,
+          "answers": 0,
+          "questions": 0
+        }
+      }
+    }
+  },
+  "30_day_plan": [
+    {
+      "day": 1,
+      "week": 1,
+      "action": "Audit all profiles - update bios, photos, and contact information",
+      "priority": "high",
+      "estimated_time": "2 hours",
+      "platforms": [
+        "GitHub",
+        "StackOverflow",
+        "LinkedIn"
+      ]
+    },
+    {
+      "day": 3,
+      "week": 1,
+      "action": "Complete LinkedIn profile - add missing experiences, skills, and summary",
+      "priority": "high",
+      "estimated_time": "1-2 hours",
+      "platforms": [
+        "LinkedIn"
+      ]
+    },
+    {
+      "day": 5,
+      "week": 1,
+      "action": "Create/update your professional README on GitHub with portfolio highlights",
+      "priority": "medium",
+      "estimated_time": "1 hour",
+      "platforms": [
+        "GitHub"
+      ]
+    },
+    {
+      "day": 7,
+      "week": 2,
+      "action": "Start a new public project or contribute to an open-source project",
+      "priority": "high",
+      "estimated_time": "3-5 hours",
+      "platforms": [
+        "GitHub"
+      ]
+    },
+    {
+      "day": 10,
+      "week": 2,
+      "action": "Write and publish a technical article or blog post",
+      "priority": "medium",
+      "estimated_time": "3 hours",
+      "platforms": [
+        "LinkedIn",
+        "GitHub"
+      ]
+    },
+    {
+      "day": 13,
+      "week": 3,
+      "action": "Star, fork, and contribute to 5 interesting GitHub repositories",
+      "priority": "medium",
+      "estimated_time": "2 hours",
+      "platforms": [
+        "GitHub"
+      ]
+    },
+    {
+      "day": 15,
+      "week": 3,
+      "action": "Engage with LinkedIn content - comment on posts and share insights",
+      "priority": "low",
+      "estimated_time": "30 minutes",
+      "platforms": [
+        "LinkedIn"
+      ]
+    },
+    {
+      "day": 17,
+      "week": 3,
+      "action": "Review and improve your top StackOverflow answers",
+      "priority": "low",
+      "estimated_time": "1 hour",
+      "platforms": [
+        "StackOverflow"
+      ]
+    },
+    {
+      "day": 20,
+      "week": 4,
+      "action": "Update repository documentation and README files",
+      "priority": "medium",
+      "estimated_time": "2 hours",
+      "platforms": [
+        "GitHub"
+      ]
+    },
+    {
+      "day": 22,
+      "week": 4,
+      "action": "Connect with 10-20 professionals in your field on LinkedIn",
+      "priority": "medium",
+      "estimated_time": "1 hour",
+      "platforms": [
+        "LinkedIn"
+      ]
+    },
+    {
+      "day": 24,
+      "week": 4,
+      "action": "Review progress and plan next month's goals",
+      "priority": "high",
+      "estimated_time": "1 hour",
+      "platforms": [
+        "All"
+      ]
+    }
+  ],
+  "generated_at": "2025-11-02T19:16:29.786673"
+}

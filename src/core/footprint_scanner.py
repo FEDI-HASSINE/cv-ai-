@@ -1,276 +1,384 @@
 """
 Footprint Scanner Module
 Analyzes professional online presence across LinkedIn, GitHub, and StackOverflow.
+
+Orchestrates data collection, scoring, insights generation, and report export.
 """
 
-import re
+import logging
 from typing import Dict, List, Any, Optional
 from datetime import datetime
+
 from ..config import Config
+from .collectors.github_collector import GitHubCollector
+from .collectors.stackoverflow_collector import StackOverflowCollector
+from .collectors.linkedin_scraper import LinkedInScraper
+from .scoring_engine import ScoringEngine
+from .insights_generator import InsightsGenerator
+from .exporters.text_exporter import TextExporter
+from .exporters.json_exporter import JSONExporter
+
+logger = logging.getLogger(__name__)
 
 
 class FootprintScanner:
     """
-    Scans and analyzes professional digital footprint
+    Orchestrates comprehensive digital footprint analysis.
+    
+    Collects data from GitHub, StackOverflow, and LinkedIn,
+    calculates scores, generates insights, and exports reports.
     """
     
-    def __init__(self):
+    def __init__(
+        self,
+        github_token: Optional[str] = None,
+        stackoverflow_key: Optional[str] = None,
+        enable_linkedin_scraping: bool = False
+    ):
+        """
+        Initialize FootprintScanner with optional API credentials.
+        
+        Args:
+            github_token: GitHub Personal Access Token
+            stackoverflow_key: Stack Exchange API key
+            enable_linkedin_scraping: Enable LinkedIn scraping (default: False)
+        """
         self.config = Config()
+        
+        # Initialize collectors
+        self.github_collector = GitHubCollector(token=github_token)
+        self.stackoverflow_collector = StackOverflowCollector(api_key=stackoverflow_key)
+        self.linkedin_scraper = LinkedInScraper(enable_scraping=enable_linkedin_scraping)
+        
+        # Initialize scoring and insights
+        self.scoring_engine = ScoringEngine()
+        self.insights_generator = InsightsGenerator()
+        
+        logger.info("FootprintScanner initialized")
     
     def analyze_footprint(
         self,
-        linkedin_url: str = None,
-        github_username: str = None,
-        stackoverflow_url: str = None
+        linkedin_url: Optional[str] = None,
+        github_username: Optional[str] = None,
+        stackoverflow_user_id: Optional[str] = None,
+        stackoverflow_url: Optional[str] = None,
+        linkedin_consent: bool = False,
+        export_text: Optional[str] = None,
+        export_json: Optional[str] = None
     ) -> Dict[str, Any]:
         """
-        Analyze digital footprint across platforms
+        Perform comprehensive digital footprint analysis.
         
         Args:
             linkedin_url: LinkedIn profile URL
             github_username: GitHub username
-            stackoverflow_url: StackOverflow profile URL
+            stackoverflow_user_id: StackOverflow user ID or username
+            linkedin_consent: User consent for LinkedIn scraping
+            export_text: Path to export text report (optional)
+            export_json: Path to export JSON report (optional)
             
         Returns:
-            Comprehensive footprint analysis
+            Complete footprint analysis including scores, insights, and data
         """
-        results = {
+        logger.info("Starting footprint analysis...")
+        
+        analysis = {
+            "scanned_at": datetime.now().isoformat(),
             "platforms_analyzed": [],
-            "overall_score": 0,
-            "linkedin": None,
-            "github": None,
-            "stackoverflow": None,
-            "recommendations": [],
-            "strengths": [],
-            "areas_for_improvement": [],
-            "analyzed_at": datetime.now().isoformat()
+            "github_data": {},
+            "stackoverflow_data": {},
+            "linkedin_data": {},
+            "scores": {},
+            "insights": {},
+            "success": False
         }
         
-        scores = []
-        
-        # Analyze LinkedIn
-        if linkedin_url:
-            linkedin_analysis = self._analyze_linkedin(linkedin_url)
-            results["linkedin"] = linkedin_analysis
-            results["platforms_analyzed"].append("LinkedIn")
-            scores.append(linkedin_analysis["score"])
-        
-        # Analyze GitHub
+        # Normalize inputs
+        # GitHub: allow pasting full profile URL, extract username
+        if github_username and "github.com" in github_username:
+            try:
+                import re
+                m = re.search(r"github\.com/([A-Za-z0-9-]+)(?:/)?$", github_username.strip())
+                if not m:
+                    # Fallback: last path segment
+                    github_username = github_username.rstrip("/").split("/")[-1]
+                else:
+                    github_username = m.group(1)
+                logger.info(f"Normalized GitHub username: {github_username}")
+            except Exception:
+                pass
+
+        # Collect GitHub data
         if github_username:
-            github_analysis = self._analyze_github(github_username)
-            results["github"] = github_analysis
-            results["platforms_analyzed"].append("GitHub")
-            scores.append(github_analysis["score"])
+            logger.info(f"Collecting GitHub data for: {github_username}")
+            try:
+                github_data = self.github_collector.collect(github_username)
+                analysis["github_data"] = github_data
+                if github_data.get("success"):
+                    analysis["platforms_analyzed"].append("GitHub")
+            except Exception as e:
+                logger.error(f"GitHub collection failed: {str(e)}")
+                analysis["github_data"] = {"success": False, "error": str(e)}
         
-        # Analyze StackOverflow
-        if stackoverflow_url:
-            stackoverflow_analysis = self._analyze_stackoverflow(stackoverflow_url)
-            results["stackoverflow"] = stackoverflow_analysis
-            results["platforms_analyzed"].append("StackOverflow")
-            scores.append(stackoverflow_analysis["score"])
+        # Backward-compat: allow passing StackOverflow profile URL and extract user id
+        if not stackoverflow_user_id and stackoverflow_url:
+            try:
+                import re
+                m = re.search(r"/users/(\d+)", stackoverflow_url)
+                if m:
+                    stackoverflow_user_id = m.group(1)
+                    logger.info(f"Extracted StackOverflow user id: {stackoverflow_user_id}")
+            except Exception:
+                pass
+
+        # Collect StackOverflow data (using user id if available)
+        if stackoverflow_user_id:
+            logger.info(f"Collecting StackOverflow data for: {stackoverflow_user_id}")
+            try:
+                so_data = self.stackoverflow_collector.collect(stackoverflow_user_id)
+                analysis["stackoverflow_data"] = so_data
+                if so_data.get("success"):
+                    analysis["platforms_analyzed"].append("StackOverflow")
+            except Exception as e:
+                logger.error(f"StackOverflow collection failed: {str(e)}")
+                analysis["stackoverflow_data"] = {"success": False, "error": str(e)}
         
-        # Calculate overall score
-        if scores:
-            results["overall_score"] = int(sum(scores) / len(scores))
+        # Collect LinkedIn data
+        if linkedin_url:
+            logger.info(f"Collecting LinkedIn data for: {linkedin_url}")
+            try:
+                linkedin_data = self.linkedin_scraper.collect(
+                    linkedin_url,
+                    user_consent=linkedin_consent
+                )
+                analysis["linkedin_data"] = linkedin_data
+                if linkedin_data.get("success"):
+                    analysis["platforms_analyzed"].append("LinkedIn")
+            except Exception as e:
+                logger.error(f"LinkedIn collection failed: {str(e)}")
+                analysis["linkedin_data"] = {"success": False, "error": str(e)}
         
-        # Generate comprehensive recommendations
-        results["recommendations"] = self._generate_comprehensive_recommendations(results)
+        # Check if we have any data
+        if not analysis["platforms_analyzed"]:
+            logger.warning("No platform data collected successfully")
+            analysis["error"] = "Failed to collect data from any platform"
+            # Provide default empty scores/insights for UI compatibility
+            analysis["scores"] = {"overall": 0, "ratings": {"overall": "N/A"}}
+            analysis["insights"] = {
+                "strengths": [],
+                "areas_for_improvement": [],
+                "recommendations": []
+            }
+            # Backward-compatibility fields
+            try:
+                summary = self.get_summary(analysis)
+                analysis.update({
+                    "overall_score": summary.get("overall_score", 0),
+                    "strengths": analysis.get("insights", {}).get("strengths", []),
+                    "areas_for_improvement": analysis.get("insights", {}).get("areas_for_improvement", []),
+                    "recommendations": analysis.get("insights", {}).get("recommendations", []),
+                })
+            except Exception:
+                pass
+            return analysis
         
-        # Identify strengths and improvements
-        results["strengths"], results["areas_for_improvement"] = (
-            self._analyze_strengths_weaknesses(results)
-        )
+        # Calculate scores
+        logger.info("Calculating scores...")
+        try:
+            scores = self.scoring_engine.calculate_scores(
+                github_data=analysis["github_data"] if analysis["github_data"].get("success") else None,
+                stackoverflow_data=analysis["stackoverflow_data"] if analysis["stackoverflow_data"].get("success") else None,
+                linkedin_data=analysis["linkedin_data"] if analysis["linkedin_data"].get("success") else None
+            )
+            analysis["scores"] = scores
+        except Exception as e:
+            logger.error(f"Scoring failed: {str(e)}")
+            analysis["scores"] = {"error": str(e)}
         
-        return results
+        # Generate insights
+        logger.info("Generating insights...")
+        try:
+            insights = self.insights_generator.generate_insights(
+                scores=analysis["scores"],
+                github_data=analysis["github_data"] if analysis["github_data"].get("success") else None,
+                stackoverflow_data=analysis["stackoverflow_data"] if analysis["stackoverflow_data"].get("success") else None,
+                linkedin_data=analysis["linkedin_data"] if analysis["linkedin_data"].get("success") else None
+            )
+            analysis["insights"] = insights
+        except Exception as e:
+            logger.error(f"Insights generation failed: {str(e)}")
+            analysis["insights"] = {"error": str(e)}
+        
+        analysis["success"] = True
+        
+        # Export reports if requested
+        if export_text:
+            logger.info(f"Exporting text report to: {export_text}")
+            try:
+                TextExporter.export(analysis, export_text)
+            except Exception as e:
+                logger.error(f"Text export failed: {str(e)}")
+        
+        if export_json:
+            logger.info(f"Exporting JSON report to: {export_json}")
+            try:
+                JSONExporter.export(analysis, export_json)
+            except Exception as e:
+                logger.error(f"JSON export failed: {str(e)}")
+        
+        logger.info("Footprint analysis completed successfully")
+        
+        # Backward-compatibility: attach summary keys expected by legacy UI
+        try:
+            summary = self.get_summary(analysis)
+            analysis.update({
+                "overall_score": summary.get("overall_score", 0),
+                "strengths": analysis.get("insights", {}).get("strengths", []),
+                "areas_for_improvement": analysis.get("insights", {}).get("areas_for_improvement", []),
+                "recommendations": analysis.get("insights", {}).get("recommendations", []),
+            })
+        except Exception:
+            pass
+
+        # Backward-compatibility: provide legacy platform blocks for UI tabs
+        try:
+            if linkedin_url:
+                analysis["linkedin"] = self._analyze_linkedin(linkedin_url)
+            if github_username:
+                # Add some demo fields referenced by UI
+                gh = self._analyze_github(github_username)
+                # Enrich demo stats a bit if we have real data
+                if analysis.get("github_data", {}).get("success"):
+                    gh["score"] = summary.get("platform_scores", {}).get("github", gh.get("score", 0))
+                analysis["github"] = gh
+            if stackoverflow_url:
+                analysis["stackoverflow"] = self._analyze_stackoverflow(stackoverflow_url)
+        except Exception:
+            pass
+
+        return analysis
     
+    def export_report(
+        self,
+        analysis: Dict[str, Any],
+        format: str = "text",
+        output_path: Optional[str] = None
+    ) -> str:
+        """
+        Export analysis report in specified format.
+        
+        Args:
+            analysis: Analysis data from analyze_footprint()
+            format: Export format ("text" or "json")
+            output_path: Path to save report
+            
+        Returns:
+            Report content as string
+        """
+        if format.lower() == "json":
+            return JSONExporter.export(analysis, output_path)
+        else:
+            return TextExporter.export(analysis, output_path)
+    
+    def get_summary(self, analysis: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Get a summary of the analysis results.
+        
+        Args:
+            analysis: Analysis data from analyze_footprint()
+            
+        Returns:
+            Summary dictionary
+        """
+        scores = analysis.get("scores", {})
+        insights = analysis.get("insights", {})
+        
+        return {
+            "overall_score": scores.get("overall", 0),
+            "overall_rating": scores.get("ratings", {}).get("overall", "N/A"),
+            "platforms_analyzed": analysis.get("platforms_analyzed", []),
+            "platform_scores": {
+                "github": scores.get("github", 0),
+                "stackoverflow": scores.get("stackoverflow", 0),
+                "linkedin": scores.get("linkedin", 0)
+            },
+            "top_strengths": insights.get("strengths", [])[:3],
+            "top_improvements": insights.get("areas_for_improvement", [])[:3],
+            "top_recommendations": insights.get("recommendations", [])[:3]
+        }
+
+
+# Legacy methods for backward compatibility with existing Streamlit app
     def _analyze_linkedin(self, url: str) -> Dict[str, Any]:
-        """
-        Analyze LinkedIn profile (demo version with URL validation)
-        In production, this would use LinkedIn API
-        """
+        """Legacy method - use analyze_footprint() instead."""
+        import re
+        
         analysis = {
             "platform": "LinkedIn",
             "url": url,
-            "is_valid": self._validate_linkedin_url(url),
-            "score": 0,
-            "insights": [],
-            "recommendations": []
+            "is_valid": bool(re.match(r'(https?://)?(www\.)?linkedin\.com/(in|profile)/[\w-]+', url or "")),
+            "score": 60,
+            "insights": [
+                {"category": "Profile Completeness", "status": "Good", "description": "Profile URL is valid"},
+            ],
+            "recommendations": [
+                "Complete all profile sections",
+                "Add professional photo",
+                "Request skill endorsements"
+            ]
         }
-        
-        if not analysis["is_valid"]:
-            analysis["recommendations"].append("Provide a valid LinkedIn profile URL")
-            return analysis
-        
-        # Demo analysis (in production, would fetch actual data)
-        analysis["insights"] = [
-            {
-                "category": "Profile Completeness",
-                "status": "Good",
-                "description": "Profile URL is valid and accessible"
-            },
-            {
-                "category": "Professional Network",
-                "status": "To be analyzed",
-                "description": "Connect LinkedIn API for detailed network analysis"
-            },
-            {
-                "category": "Content Activity",
-                "status": "To be analyzed",
-                "description": "Posts, articles, and engagement metrics"
-            },
-            {
-                "category": "Endorsements",
-                "status": "To be analyzed",
-                "description": "Skills endorsed by connections"
-            }
-        ]
-        
-        # Score based on having a profile
-        analysis["score"] = 60  # Base score for having a valid profile
-        
-        analysis["recommendations"] = [
-            "Complete all profile sections (Summary, Experience, Education, Skills)",
-            "Add a professional profile photo and banner",
-            "Request endorsements from colleagues for key skills",
-            "Publish articles or posts to demonstrate expertise",
-            "Grow your network with industry professionals",
-            "Join and participate in relevant LinkedIn groups"
-        ]
-        
         return analysis
     
     def _analyze_github(self, username: str) -> Dict[str, Any]:
-        """
-        Analyze GitHub profile (demo version)
-        In production, this would use GitHub API
-        """
+        """Legacy method - use analyze_footprint() instead."""
+        import re
+        
         analysis = {
             "platform": "GitHub",
             "username": username,
-            "is_valid": self._validate_github_username(username),
-            "score": 0,
-            "insights": [],
-            "recommendations": [],
-            "demo_stats": {}
-        }
-        
-        if not analysis["is_valid"]:
-            analysis["recommendations"].append("Provide a valid GitHub username")
-            return analysis
-        
-        # Demo stats (in production, fetch from GitHub API)
-        analysis["demo_stats"] = {
-            "profile_url": f"https://github.com/{username}",
-            "public_repos": "To be fetched via API",
-            "followers": "To be fetched via API",
-            "contributions": "To be fetched via API",
-            "popular_languages": ["Python", "JavaScript", "TypeScript"],
-            "activity_level": "Moderate"
-        }
-        
-        analysis["insights"] = [
-            {
-                "category": "Repository Quality",
-                "status": "To be analyzed",
-                "description": "Number and quality of public repositories"
-            },
-            {
-                "category": "Contribution Activity",
-                "status": "To be analyzed",
-                "description": "Commit frequency and consistency"
-            },
-            {
-                "category": "Code Quality",
-                "status": "To be analyzed",
-                "description": "Documentation, testing, and best practices"
-            },
-            {
-                "category": "Community Engagement",
-                "status": "To be analyzed",
-                "description": "Stars, forks, and collaboration"
+            "is_valid": bool(re.match(r'^[a-zA-Z0-9-]+$', username or "")) and len(username or "") <= 39,
+            "score": 65,
+            "insights": [
+                {"category": "Repository Quality", "status": "To be analyzed", "description": "Connect API"},
+            ],
+            "recommendations": [
+                "Maintain consistent contributions",
+                "Create pinned repositories",
+                "Write comprehensive READMEs"
+            ],
+            "demo_stats": {
+                "profile_url": f"https://github.com/{username}",
+                "activity_level": "Moderate"
             }
-        ]
-        
-        analysis["score"] = 65  # Base score for having a profile
-        
-        analysis["recommendations"] = [
-            "Maintain consistent contribution activity (green squares!)",
-            "Create pinned repositories showcasing best work",
-            "Write comprehensive README files for all projects",
-            "Add proper documentation and comments to code",
-            "Contribute to open-source projects in your field",
-            "Use GitHub Actions for CI/CD demonstrations",
-            "Include project descriptions and tags for discoverability"
-        ]
-        
+        }
         return analysis
     
     def _analyze_stackoverflow(self, url: str) -> Dict[str, Any]:
-        """
-        Analyze StackOverflow profile (demo version)
-        In production, this would use StackOverflow API
-        """
+        """Legacy method - use analyze_footprint() instead."""
+        import re
+        
         analysis = {
             "platform": "StackOverflow",
             "url": url,
-            "is_valid": self._validate_stackoverflow_url(url),
-            "score": 0,
-            "insights": [],
-            "recommendations": [],
-            "demo_stats": {}
-        }
-        
-        if not analysis["is_valid"]:
-            analysis["recommendations"].append("Provide a valid StackOverflow profile URL")
-            return analysis
-        
-        # Demo stats (in production, fetch from SO API)
-        analysis["demo_stats"] = {
-            "reputation": "To be fetched via API",
-            "badges": "To be fetched via API",
-            "answers": "To be fetched via API",
-            "questions": "To be fetched via API",
-            "top_tags": ["python", "javascript", "sql"]
-        }
-        
-        analysis["insights"] = [
-            {
-                "category": "Reputation Score",
-                "status": "To be analyzed",
-                "description": "Overall reputation and influence"
-            },
-            {
-                "category": "Answer Quality",
-                "status": "To be analyzed",
-                "description": "Accepted answers and upvotes"
-            },
-            {
-                "category": "Expertise Areas",
-                "status": "To be analyzed",
-                "description": "Top tags and technical domains"
-            },
-            {
-                "category": "Community Involvement",
-                "status": "To be analyzed",
-                "description": "Questions, answers, and badges earned"
+            "is_valid": bool(re.match(r'(https?://)?(www\.)?stackoverflow\.com/users/\d+/[\w-]+', url or "")),
+            "score": 55,
+            "insights": [
+                {"category": "Reputation Score", "status": "To be analyzed", "description": "Connect API"},
+            ],
+            "recommendations": [
+                "Answer questions regularly",
+                "Earn badges",
+                "Build reputation"
+            ],
+            "demo_stats": {
+                "reputation": "To be fetched via API"
             }
-        ]
-        
-        analysis["score"] = 55  # Base score for having a profile
-        
-        analysis["recommendations"] = [
-            "Answer questions regularly in your area of expertise",
-            "Ask well-researched questions when stuck",
-            "Earn badges to demonstrate consistent contribution",
-            "Build reputation through high-quality answers",
-            "Focus on tags relevant to your career goals",
-            "Provide code examples and explanations in answers"
-        ]
-        
+        }
         return analysis
     
     def _validate_linkedin_url(self, url: str) -> bool:
         """Validate LinkedIn URL format"""
+        import re
         if not url:
             return False
         pattern = r'(https?://)?(www\.)?linkedin\.com/(in|profile)/[\w-]+'
@@ -278,14 +386,15 @@ class FootprintScanner:
     
     def _validate_github_username(self, username: str) -> bool:
         """Validate GitHub username format"""
+        import re
         if not username:
             return False
-        # GitHub usernames can contain alphanumeric and hyphens
         pattern = r'^[a-zA-Z0-9-]+$'
         return bool(re.match(pattern, username)) and len(username) <= 39
     
     def _validate_stackoverflow_url(self, url: str) -> bool:
         """Validate StackOverflow URL format"""
+        import re
         if not url:
             return False
         pattern = r'(https?://)?(www\.)?stackoverflow\.com/users/\d+/[\w-]+'
@@ -298,108 +407,31 @@ class FootprintScanner:
         """Generate comprehensive recommendations across all platforms"""
         recommendations = []
         
-        platforms_count = len(results["platforms_analyzed"])
+        platforms_count = len(results.get("platforms_analyzed", []))
         
-        # Cross-platform recommendations
         if platforms_count == 0:
             recommendations.append({
                 "priority": "Critical",
-                "recommendation": "Create profiles on professional platforms (LinkedIn, GitHub, StackOverflow)",
-                "impact": "Establishes your professional online presence"
+                "recommendation": "Create profiles on professional platforms",
+                "impact": "Establishes professional online presence"
             })
-        elif platforms_count == 1:
-            recommendations.append({
-                "priority": "High",
-                "recommendation": "Expand presence to additional platforms",
-                "impact": "Increases visibility to recruiters and opportunities"
-            })
-        elif platforms_count == 2:
-            recommendations.append({
-                "priority": "Medium",
-                "recommendation": "Consider adding third platform for comprehensive footprint",
-                "impact": "Demonstrates well-rounded technical engagement"
-            })
-        else:
-            recommendations.append({
-                "priority": "Low",
-                "recommendation": "Maintain active presence across all platforms",
-                "impact": "Keeps your profile current and relevant"
-            })
-        
-        # General best practices
-        recommendations.extend([
-            {
-                "priority": "High",
-                "recommendation": "Ensure consistency across all platforms",
-                "impact": "Builds trust and professional credibility"
-            },
-            {
-                "priority": "Medium",
-                "recommendation": "Regular activity demonstrates ongoing learning",
-                "impact": "Shows commitment to professional development"
-            },
-            {
-                "priority": "Medium",
-                "recommendation": "Link platforms together in profiles",
-                "impact": "Creates unified professional brand"
-            }
-        ])
         
         return recommendations
     
     def _analyze_strengths_weaknesses(
         self,
         results: Dict[str, Any]
-    ) -> tuple[List[str], List[str]]:
+    ) -> tuple:
         """Analyze strengths and areas for improvement"""
         strengths = []
         improvements = []
         
-        platforms_count = len(results["platforms_analyzed"])
-        overall_score = results["overall_score"]
+        platforms_count = len(results.get("platforms_analyzed", []))
         
-        # Strengths
-        if platforms_count >= 3:
-            strengths.append("Strong multi-platform presence")
-        elif platforms_count >= 2:
+        if platforms_count >= 2:
             strengths.append("Good platform diversity")
-        
-        if overall_score >= 70:
-            strengths.append("High overall footprint score")
-        elif overall_score >= 60:
-            strengths.append("Solid professional online presence")
-        
-        if results.get("linkedin"):
-            strengths.append("LinkedIn profile established")
-        
-        if results.get("github"):
-            strengths.append("Active GitHub presence for code portfolio")
-        
-        if results.get("stackoverflow"):
-            strengths.append("StackOverflow profile shows community engagement")
-        
-        # Areas for improvement
-        if platforms_count < 2:
-            improvements.append("Limited platform presence - expand to more platforms")
-        
-        if overall_score < 60:
-            improvements.append("Overall score could be improved through more activity")
-        
-        if not results.get("linkedin"):
-            improvements.append("Missing LinkedIn profile - critical for professional networking")
-        
-        if not results.get("github"):
-            improvements.append("Missing GitHub profile - important for technical roles")
-        
-        if not results.get("stackoverflow"):
-            improvements.append("Consider joining StackOverflow for community engagement")
-        
-        # Ensure we have at least some content
-        if not strengths:
-            strengths.append("Beginning to build online presence")
-        
-        if not improvements:
-            improvements.append("Continue maintaining active presence across all platforms")
+        else:
+            improvements.append("Limited platform presence")
         
         return strengths, improvements
     
@@ -408,23 +440,7 @@ class FootprintScanner:
         analysis: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Generate comprehensive footprint report"""
-        return {
-            "summary": {
-                "platforms_analyzed": len(analysis["platforms_analyzed"]),
-                "overall_score": analysis["overall_score"],
-                "status": self._get_status_label(analysis["overall_score"])
-            },
-            "platform_breakdown": {
-                platform: analysis.get(platform.lower())
-                for platform in analysis["platforms_analyzed"]
-            },
-            "key_strengths": analysis["strengths"][:5],
-            "priority_improvements": analysis["areas_for_improvement"][:5],
-            "action_items": [
-                rec for rec in analysis["recommendations"]
-                if rec["priority"] in ["Critical", "High"]
-            ][:5]
-        }
+        return self.get_summary(analysis)
     
     def _get_status_label(self, score: int) -> str:
         """Get status label based on score"""
@@ -438,3 +454,4 @@ class FootprintScanner:
             return "Needs Improvement"
         else:
             return "Limited"
+
