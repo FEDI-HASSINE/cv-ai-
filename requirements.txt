@@ -62,6 +62,9 @@ redis>=5.0.1
 # Task queue for automation
 celery>=5.3.4
 
+# Scheduling (simple alternative to Celery)
+schedule>=1.2.0
+
 # ============================================================================
 # SECURITY ENHANCEMENTS (Security C)
 # ============================================================================
