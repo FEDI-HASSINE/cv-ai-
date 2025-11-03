@@ -10,6 +10,8 @@ import logging
 from pathlib import Path
 import tempfile
 
+from .auth import get_current_user_from_token
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
@@ -30,12 +32,12 @@ class ResumeAnalysisResponse(BaseModel):
 @router.post("/analyze", response_model=ResumeAnalysisResponse)
 async def analyze_resume(
     file: UploadFile = File(...),
-    # Uncomment to require authentication:
-    # current_user: dict = Depends(get_current_user_from_token)
+    current_user: dict = Depends(get_current_user_from_token)  # ENABLED: Require authentication
 ):
     """
     Analyze uploaded resume
     Returns comprehensive analysis with scores and suggestions
+    Requires authentication to prevent abuse
     """
     from ...security.validators import InputValidator
     from ...security.audit_logger import get_audit_logger
@@ -53,6 +55,9 @@ async def analyze_resume(
     
     # Sanitize filename
     safe_filename = validator.sanitize_filename(file.filename)
+    
+    # Get user ID from token
+    user_id = current_user.get('sub', 'unknown')
     
     try:
         # Read file content
@@ -86,7 +91,7 @@ async def analyze_resume(
             
             # Audit log
             get_audit_logger().log_file_upload(
-                user_id="anonymous",  # Replace with actual user from token
+                user_id=user_id,
                 filename=safe_filename,
                 file_size=len(content),
                 success=True
@@ -113,7 +118,7 @@ async def analyze_resume(
         logger.error(f"Resume analysis failed: {e}")
         
         get_audit_logger().log_file_upload(
-            user_id="anonymous",
+            user_id=user_id,
             filename=safe_filename,
             file_size=len(content) if 'content' in locals() else 0,
             success=False

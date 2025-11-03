@@ -295,16 +295,14 @@ def sanitize_input(text: str, max_length: Optional[int] = None) -> str:
     Returns:
         Sanitized text
     """
-    validator = InputValidator()
-    
     # Check for injection attempts
-    if validator.check_sql_injection(text):
+    if InputValidator.check_sql_injection(text):
         logger.warning("SQL injection attempt blocked")
         return ""
     
-    if validator.check_xss(text):
+    if InputValidator.check_xss(text):
         logger.warning("XSS attempt blocked")
         return ""
     
     # Sanitize
-    return validator.sanitize_text(text, max_length)
+    return InputValidator.sanitize_text(text, max_length)

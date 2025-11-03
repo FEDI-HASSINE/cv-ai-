@@ -206,6 +206,8 @@ class VectorJobMatcher:
             candidate_embedding = self.model.encode([candidate_text], convert_to_numpy=True)
             
             # Filter by region if specified
+            # Note: For large datasets, consider implementing filtering in FAISS search
+            # or using boolean indexing to avoid array copies
             if region_filter and region_filter != "Global":
                 filtered_indices = [
                     i for i, job in enumerate(self.job_database)

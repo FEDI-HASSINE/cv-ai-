@@ -244,11 +244,10 @@ class JobParser:
         
         found = []
         for pattern in education_patterns:
-            if re.search(pattern, text, re.IGNORECASE):
-                # Extract the matched text with proper casing
-                match = re.search(pattern, text, re.IGNORECASE)
-                if match:
-                    found.append(match.group(0).title())
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                # Extract the matched text with proper casing (avoid double search)
+                found.append(match.group(0).title())
         
         return found if found else None
     

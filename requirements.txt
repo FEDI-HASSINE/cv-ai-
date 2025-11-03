@@ -47,7 +47,7 @@ beautifulsoup4>=4.12.2
 fastapi>=0.109.1
 uvicorn[standard]>=0.24.0
 pydantic>=2.5.0
-python-multipart>=0.0.18  # Patched for ReDoS vulnerability
+python-multipart>=0.0.19  # Patched for ReDoS vulnerability (updated to 0.0.19)
 
 # ============================================================================
 # DATABASE & STORAGE (Job Matching Improvement B)
