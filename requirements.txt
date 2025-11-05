@@ -1,0 +1,83 @@
+# Core dependencies
+streamlit>=1.28.0
+
+# File parsing
+PyPDF2>=3.0.0
+python-docx>=0.8.11
+
+# Data processing
+pandas>=2.0.0
+
+# OpenAI and OpenRouter API support
+openai>=1.0.0,<2.0.0
+
+# PDF generation
+reportlab>=3.6.0
+
+# Additional utilities
+requests>=2.31.0
+
+# Footprint Scanner - Web automation (LinkedIn best-effort scraping)
+playwright>=1.40.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-mock>=3.12.0
+
+# Type checking
+mypy>=1.7.0
+
+# ============================================================================
+# ENHANCED NLP & VECTOR SEARCH (Technical Improvement A)
+# ============================================================================
+# Sentence transformers for better semantic matching
+sentence-transformers>=2.2.2
+
+# Vector similarity search
+faiss-cpu>=1.7.4
+
+# Web scraping enhancements
+beautifulsoup4>=4.12.2
+
+# ============================================================================
+# BACKEND API & ASYNC SUPPORT (Technical Improvement A)
+# ============================================================================
+# FastAPI backend framework (patched version for security)
+fastapi>=0.109.1
+uvicorn[standard]>=0.24.0
+pydantic>=2.5.0
+python-multipart>=0.0.19  # Patched for ReDoS vulnerability (updated to 0.0.19)
+
+# ============================================================================
+# DATABASE & STORAGE (Job Matching Improvement B)
+# ============================================================================
+# PostgreSQL support
+sqlalchemy>=2.0.23
+asyncpg>=0.29.0
+
+# Redis for caching
+redis>=5.0.1
+
+# Task queue for automation
+celery>=5.3.4
+
+# Scheduling (simple alternative to Celery)
+schedule>=1.2.0
+
+# ============================================================================
+# SECURITY ENHANCEMENTS (Security C)
+# ============================================================================
+# Encryption and secrets (patched versions)
+cryptography>=42.0.4  # Patched for timing oracle and NULL pointer vulnerabilities
+python-jose[cryptography]>=3.4.0  # Patched for algorithm confusion vulnerability
+passlib[bcrypt]>=1.7.4
+
+# Rate limiting
+slowapi>=0.1.9
+
+# Environment variables with validation
+python-dotenv>=1.0.0
+
+# Input validation
+validators>=0.22.0

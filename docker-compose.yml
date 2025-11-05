@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # API d'analyse de CV
+  api:
+    build: .
+    container_name: cv-analyzer-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persistance des logs et rapports
+      - ./logs:/app/logs
+      - ./reports:/app/reports
+      # Montage du .env pour les secrets
+      - ./.env:/app/.env:ro
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-changeme-super-secret-key-256-bits}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,https://votre-frontend.com}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - cv-network
+
+  # Nginx reverse proxy (optionnel, pour production)
+  nginx:
+    image: nginx:alpine
+    container_name: cv-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - cv-network
+    profiles:
+      - production
+
+networks:
+  cv-network:
+    driver: bridge
+
+# Utilisation:
+# - Développement: docker-compose up
+# - Production: docker-compose --profile production up -d

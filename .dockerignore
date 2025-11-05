@@ -1,0 +1,60 @@
+# Git
+.git
+.gitignore
+.github
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Caches
+.cache/
+*.log
+logs/
+
+# Reports
+reports/
+temp/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Documentation (pas nécessaire dans l'image)
+docs/
+examples/
+*.md
+!README.md
+
+# Tests
+tests/
+pytest.ini
+.pytest_cache/
+
+# Node (si présent)
+node_modules/
+package-lock.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data
+data/
+models/
+
+# Scripts non nécessaires en production
+scripts/
+
+# Config non nécessaire
+.env.example
+requirements.txt
