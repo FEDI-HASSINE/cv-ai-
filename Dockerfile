@@ -35,7 +35,14 @@ RUN apt-get update && \
 
 # Copier le code source
 COPY --chown=appuser:appuser src/ ./src/
-COPY --chown=appuser:appuser .env.example .env
+
+# Créer un fichier .env par défaut (sera remplacé par volume en prod)
+RUN echo "SECRET_KEY=docker-default-secret-key-change-in-production" > .env && \
+    echo "JWT_SECRET=docker-jwt-secret-change-in-production" >> .env && \
+    echo "ALLOWED_ORIGINS=http://localhost:3000" >> .env && \
+    echo "LOG_LEVEL=info" >> .env && \
+    echo "DEBUG=False" >> .env && \
+    echo "APP_ENV=docker" >> .env
 
 # Créer les répertoires nécessaires
 RUN mkdir -p logs reports temp && \
